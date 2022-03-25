@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type socketChannel struct {
+type SocketChannel struct {
 	ctx       context.Context
 	fd        int
 	conn      netpoll.Connection
@@ -21,7 +21,7 @@ type socketChannel struct {
 	handlers  []ChannelHandler
 }
 
-func (h *socketChannel) Send(msg interface{}) error {
+func (h *SocketChannel) Send(msg interface{}) error {
 	// already encoded, send directly.
 	if data, ok := msg.([]byte); ok {
 		return h.send(data)
@@ -34,12 +34,16 @@ func (h *socketChannel) Send(msg interface{}) error {
 	}
 }
 
-func (h *socketChannel) send(data []byte) error {
+func (h *SocketChannel) LaterRun(task func()) {
+	h.worker.CtxGo(h.ctx, task)
+}
+
+func (h *SocketChannel) send(data []byte) error {
 	_, err := h.conn.Writer().WriteBinary(data)
 	return err
 }
 
-func (h *socketChannel) onOpen() {
+func (h *SocketChannel) onOpen() {
 	if len(h.handlers) > 0 {
 		for _, handler := range h.handlers {
 			handler.OnOpen(h)
@@ -47,7 +51,7 @@ func (h *socketChannel) onOpen() {
 	}
 }
 
-func (h *socketChannel) onClose() {
+func (h *SocketChannel) onClose() {
 	if len(h.handlers) > 0 {
 		for _, handler := range h.handlers {
 			handler.OnClose(h)
@@ -55,7 +59,7 @@ func (h *socketChannel) onClose() {
 	}
 }
 
-func (h *socketChannel) onMessageRead() error {
+func (h *SocketChannel) onMessageRead() error {
 	reader := h.conn.Reader()
 	// 消息结构(len(4) + code(4) + body(len - 4))
 	if reader.Len() < MsgSizeLength {
