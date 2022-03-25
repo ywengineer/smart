@@ -1,7 +1,7 @@
 package mr_smart
 
 type Request struct {
-	request     *socketChannel
+	request     *SocketChannel
 	messageCode int
 	body        interface{}
 }
@@ -12,7 +12,7 @@ func getRequestBodyModel(msgCode int) interface{} {
 
 // find handlers to req and submit task to worker
 func dispatchRequest(req *Request) {
-	req.request.worker.CtxGo(req.request.ctx, func() {
+	req.request.LaterRun(func() {
 
 	})
 }

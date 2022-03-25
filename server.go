@@ -85,13 +85,13 @@ func (s *smartServer) onConnRead(ctx context.Context, conn netpoll.Connection) e
 		_ = conn.Close()
 		return fmt.Errorf("channel [%d] not registered", fd)
 	} else { // registered
-		return channel.(*socketChannel).onMessageRead()
+		return channel.(*SocketChannel).onMessageRead()
 	}
 }
 
 func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) context.Context {
 	_ = conn.AddCloseCallback(s.onConnClosed)
-	channel := &socketChannel{
+	channel := &SocketChannel{
 		ctx:  ctx,
 		fd:   conn.(netpoll.Conn).Fd(),
 		conn: conn,
@@ -114,7 +114,7 @@ func (s *smartServer) onConnClosed(conn netpoll.Connection) error {
 	fd := conn.(netpoll.Conn).Fd()
 	atomic.AddInt32(&s.channelCount, -1)
 	if ch, ok := s.channels.LoadAndDelete(fd); ok {
-		ch.(*socketChannel).onClose()
+		ch.(*SocketChannel).onClose()
 	}
 	return nil
 }
@@ -124,9 +124,9 @@ func (s *smartServer) ConnCount() int32 {
 }
 
 // GetChannel by fd(id)
-func (s *smartServer) GetChannel(id int) *socketChannel {
+func (s *smartServer) GetChannel(id int) *SocketChannel {
 	if ch, ok := s.channels.Load(id); ok {
-		return ch.(*socketChannel)
+		return ch.(*SocketChannel)
 	}
 	return nil
 }

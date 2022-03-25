@@ -6,26 +6,26 @@ import (
 )
 
 type ChannelHandler interface {
-	OnOpen(channel *socketChannel)
-	OnClose(channel *socketChannel)
+	OnOpen(channel *SocketChannel)
+	OnClose(channel *SocketChannel)
 }
 
-type ChannelInitializer func(channel *socketChannel)
+type ChannelInitializer func(channel *SocketChannel)
 
 func WithCodec(f func() codec.Codec) ChannelInitializer {
-	return func(channel *socketChannel) {
+	return func(channel *SocketChannel) {
 		channel.codec = f()
 	}
 }
 
 func WithByteOrder(f func() binary.ByteOrder) ChannelInitializer {
-	return func(channel *socketChannel) {
+	return func(channel *SocketChannel) {
 		channel.byteOrder = f()
 	}
 }
 
 func AddChannelHandler(f func() ChannelHandler) ChannelInitializer {
-	return func(channel *socketChannel) {
+	return func(channel *SocketChannel) {
 		channel.handlers = append(channel.handlers, f())
 	}
 }
