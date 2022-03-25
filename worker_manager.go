@@ -43,8 +43,6 @@ func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
 	return manager, nil
 }
 
-// LoadBalance is used to do load balancing among multiple pollers.
-// a single poller may not be optimal if the number of cores is large (40C+).
 type defaultWorkerManager struct {
 	balance loadBalance   // load balancing method
 	pools   []gopool.Pool // all the pools

@@ -11,15 +11,14 @@ type ChannelHandler interface {
 }
 
 type ChannelInitializer func(channel *socketChannel)
-type OnOpen func(channel *socketChannel)
 
-func SetCodec(f func() codec.Codec) ChannelInitializer {
+func WithCodec(f func() codec.Codec) ChannelInitializer {
 	return func(channel *socketChannel) {
 		channel.codec = f()
 	}
 }
 
-func SetByteOrder(f func() binary.ByteOrder) ChannelInitializer {
+func WithByteOrder(f func() binary.ByteOrder) ChannelInitializer {
 	return func(channel *socketChannel) {
 		channel.byteOrder = f()
 	}
