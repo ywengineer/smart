@@ -44,7 +44,7 @@ func (s *smartServer) Serve(network, addr string) (context.Context, error) {
 		return nil, err
 	}
 	rootCtx, cancel := context.WithCancel(context.Background())
-	eventLoop, _ := netpoll.NewEventLoop(s.onConnMessage, netpoll.WithOnConnect(s.onConnOpen))
+	eventLoop, _ := netpoll.NewEventLoop(s.onConnRead, netpoll.WithOnPrepare(s.onConnPrepare), netpoll.WithOnConnect(s.onConnOpen))
 	s.eventLoop = eventLoop
 	s.ctx = rootCtx
 	s.shutdownHook = cancel
@@ -73,7 +73,11 @@ func (s *smartServer) Shutdown() error {
 	return s.eventLoop.Shutdown(s.ctx)
 }
 
-func (s *smartServer) onConnMessage(ctx context.Context, conn netpoll.Connection) error {
+func (s *smartServer) onConnPrepare(conn netpoll.Connection) context.Context {
+	return s.ctx
+}
+
+func (s *smartServer) onConnRead(ctx context.Context, conn netpoll.Connection) error {
 	fd := conn.(netpoll.Conn).Fd()
 	// channel not registered
 	if channel, ok := s.channels.Load(fd); ok == false {
@@ -88,9 +92,11 @@ func (s *smartServer) onConnMessage(ctx context.Context, conn netpoll.Connection
 func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) context.Context {
 	_ = conn.AddCloseCallback(s.onConnClosed)
 	channel := &socketChannel{
+		ctx:  ctx,
 		fd:   conn.(netpoll.Conn).Fd(),
 		conn: conn,
 	}
+	channel.worker = workers.Pick(channel.fd)
 	for _, initializer := range s.initializers {
 		initializer(channel)
 	}
@@ -100,16 +106,27 @@ func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) c
 	}
 	s.channels.Store(channel.fd, channel)
 	atomic.AddInt32(&s.channelCount, 1)
+	channel.onOpen()
 	return s.ctx
 }
 
 func (s *smartServer) onConnClosed(conn netpoll.Connection) error {
 	fd := conn.(netpoll.Conn).Fd()
-	s.channels.Delete(fd)
 	atomic.AddInt32(&s.channelCount, -1)
+	if ch, ok := s.channels.LoadAndDelete(fd); ok {
+		ch.(*socketChannel).onClose()
+	}
 	return nil
 }
 
 func (s *smartServer) ConnCount() int32 {
 	return atomic.LoadInt32(&s.channelCount)
+}
+
+// GetChannel by fd(id)
+func (s *smartServer) GetChannel(id int) *socketChannel {
+	if ch, ok := s.channels.Load(id); ok {
+		return ch.(*socketChannel)
+	}
+	return nil
 }
