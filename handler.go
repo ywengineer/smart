@@ -9,7 +9,7 @@ import (
 )
 
 var hManager = &handlerManager{
-	handlerMap: make(map[int]*handlerDefinition, 1000),
+	_handlerMap: make(map[int]*handlerDefinition, 1000),
 }
 
 // handler structure
@@ -41,15 +41,16 @@ func (hd *handlerDefinition) invoke(channel *SocketChannel, in interface{}) inte
 }
 
 type handlerManager struct {
-	handlerMap map[int]*handlerDefinition
+	// can not use directly
+	_handlerMap map[int]*handlerDefinition
 }
 
 func (hm *handlerManager) findHandlerDefinition(msgCode int) *handlerDefinition {
-	return hm.handlerMap[msgCode]
+	return hm._handlerMap[msgCode]
 }
 
 func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
-	if _, ok := hm.handlerMap[def.messageCode]; ok {
+	if _, ok := hm._handlerMap[def.messageCode]; ok {
 		srvLogger.Warn("handler already exists", zap.Int("msgCode", def.messageCode))
 	} else {
 		def.inPool = &sync.Pool{
@@ -63,6 +64,6 @@ func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
 				}
 			}(def),
 		}
-		hm.handlerMap[def.messageCode] = def
+		hm._handlerMap[def.messageCode] = def
 	}
 }
