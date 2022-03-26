@@ -11,12 +11,19 @@ import (
 	"sync/atomic"
 )
 
-const MsgSizeLength = 4
-const MsgSizeCode = 4
+type status int32
+
+const (
+	// Random requests that connections are randomly distributed.
+	prepared status = iota
+	// Fixed. requests that connections are bind to a fixed pool.
+	running
+	stopped
+)
 
 type smartServer struct {
 	lock         sync.Mutex
-	running      int32
+	status       status
 	ctx          context.Context
 	shutdownHook context.CancelFunc
 	eventLoop    netpoll.EventLoop
@@ -27,10 +34,10 @@ type smartServer struct {
 
 func NewSmartServer(initializer []ChannelInitializer) (*smartServer, error) {
 	if len(initializer) == 0 {
-		return nil, errors.New("holder initializer can not be empty")
+		return nil, errors.New("initializer of channel can not be empty")
 	}
 	server := &smartServer{
-		running:      0,
+		status:       prepared,
 		initializers: initializer,
 	}
 	return server, nil
@@ -39,36 +46,35 @@ func NewSmartServer(initializer []ChannelInitializer) (*smartServer, error) {
 func (s *smartServer) Serve(network, addr string) (context.Context, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	if atomic.CompareAndSwapInt32(&s.running, 0, 1) == false {
-		return nil, errors.New("start smart server failed. maybe already started")
+	if s.status != prepared {
+		return nil, errors.New("start smart server failed. maybe already started or can not start again")
 	}
 	listener, err := netpoll.CreateListener(network, addr)
 	if err != nil {
 		return nil, err
 	}
-	rootCtx, cancel := context.WithCancel(context.Background())
+	s.ctx, s.shutdownHook = context.WithCancel(context.Background())
 	eventLoop, _ := netpoll.NewEventLoop(s.onConnRead, netpoll.WithOnPrepare(s.onConnPrepare), netpoll.WithOnConnect(s.onConnOpen))
 	s.eventLoop = eventLoop
-	s.ctx = rootCtx
-	s.shutdownHook = cancel
 	// start listen loop ...
 	go func() {
 		err = eventLoop.Serve(listener)
-		// 启动失败
+		// start failed or serve quit
 		if err != nil {
 			_ = s.Shutdown()
 		}
 	}()
-	return rootCtx, nil
+	return s.ctx, nil
 }
 
 func (s *smartServer) Shutdown() error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	running := atomic.LoadInt32(&s.running)
-	if running == 0 {
-		return errors.New("mr. smart server is not running")
+	if s.status != running {
+		return errors.New("mr. smart server is not prepared or already stopped")
 	}
+	// can not start again.
+	s.status = stopped
 	s.shutdownHook()
 	return s.eventLoop.Shutdown(s.ctx)
 }

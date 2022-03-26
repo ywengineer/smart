@@ -10,6 +10,9 @@ import (
 	"go.uber.org/zap"
 )
 
+const protocolLengthBytes = 4
+const protocolCodeBytes = 4
+
 type SocketChannel struct {
 	ctx       context.Context
 	fd        int
@@ -79,25 +82,25 @@ func (h *SocketChannel) onClose() {
 func (h *SocketChannel) onMessageRead() error {
 	reader := h.conn.Reader()
 	// 消息结构(len(4) + code(4) + body(len - 4))
-	if reader.Len() < MsgSizeLength {
+	if reader.Len() < protocolLengthBytes {
 		srvLogger.Info("not enough data")
 		return errors.New("not enough data")
 	}
-	if data, err := reader.Peek(MsgSizeLength); err != nil {
+	if data, err := reader.Peek(protocolLengthBytes); err != nil {
 		srvLogger.Error("read length failed.", zap.Error(err))
 		return err
 	} else {
 		pkgSize := int(h.byteOrder.Uint32(data))
-		if reader.Len() < pkgSize+MsgSizeLength {
+		if reader.Len() < pkgSize+protocolLengthBytes {
 			srvLogger.Info("message body is not enough")
 			return errors.New("message body is not enough")
 		} else {
-			_ = reader.Skip(MsgSizeLength)
+			_ = reader.Skip(protocolLengthBytes)
 			pkg, _ := reader.Slice(pkgSize)
-			codeBytes, _ := pkg.ReadBinary(MsgSizeCode)
+			codeBytes, _ := pkg.ReadBinary(protocolCodeBytes)
 			req := getRequest()
 			req.messageCode = int(h.byteOrder.Uint32(codeBytes))
-			req.body, _ = pkg.ReadBinary(pkgSize - MsgSizeCode)
+			req.body, _ = pkg.ReadBinary(pkgSize - protocolCodeBytes)
 			_ = pkg.Release()
 			h.LaterRun(func() {
 				defer releaseRequest(req)

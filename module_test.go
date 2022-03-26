@@ -23,9 +23,6 @@ type Res struct {
 type Module struct {
 }
 
-type NotModule struct {
-}
-
 func (m *Module) Name() string {
 	return "TestModule"
 }
