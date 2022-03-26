@@ -14,9 +14,7 @@ import (
 type status int32
 
 const (
-	// Random requests that connections are randomly distributed.
 	prepared status = iota
-	// Fixed. requests that connections are bind to a fixed pool.
 	running
 	stopped
 )
@@ -102,7 +100,7 @@ func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) c
 		fd:   conn.(netpoll.Conn).Fd(),
 		conn: conn,
 	}
-	channel.worker = workers.Pick(channel.fd)
+	channel.worker = wManager.Pick(channel.fd)
 	for _, initializer := range s.initializers {
 		initializer(channel)
 	}

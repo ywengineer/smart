@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var workers WorkerManager
+var wManager WorkerManager
 
 func init() {
 	wm, _ := NewWorkerManager(1, RoundRobin)
@@ -16,11 +16,11 @@ func init() {
 
 // SetWorkerManager set custom worker manager for process client channel
 func SetWorkerManager(manager WorkerManager) {
-	workers = manager
+	wManager = manager
 }
 
 func GetWorkManager() WorkerManager {
-	return workers
+	return wManager
 }
 
 type WorkerManager interface {

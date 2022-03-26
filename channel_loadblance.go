@@ -12,8 +12,8 @@ type LoadBalance int
 const (
 	// Random requests that connections are randomly distributed.
 	Random LoadBalance = iota
-	// Fixed. requests that connections are bind to a fixed pool.
-	Fixed
+	// Hash. requests that connections are bind to a fixed pool.
+	Hash
 	RoundRobin
 )
 
@@ -28,12 +28,12 @@ func newLoadBalance(lb LoadBalance, pools []gopool.Pool) loadBalance {
 	switch lb {
 	case Random:
 		return newRandomLB(pools)
-	case Fixed:
-		return newFixedLB(pools)
+	case Hash:
+		return newHashLB(pools)
 	case RoundRobin:
 		return newRoundRobinLB(pools)
 	}
-	return newFixedLB(pools)
+	return newHashLB(pools)
 }
 
 // randomLB
@@ -55,21 +55,21 @@ func (b *randomLB) Pick(id int) gopool.Pool {
 	return b.pools[idx]
 }
 
-// fixedLB
-func newFixedLB(pools []gopool.Pool) loadBalance {
-	return &fixedLB{pools: pools, poolSize: len(pools)}
+// hashLB
+func newHashLB(pools []gopool.Pool) loadBalance {
+	return &hashLB{pools: pools, poolSize: len(pools)}
 }
 
-type fixedLB struct {
+type hashLB struct {
 	pools    []gopool.Pool
 	poolSize int
 }
 
-func (b *fixedLB) LoadBalance() LoadBalance {
-	return Fixed
+func (b *hashLB) LoadBalance() LoadBalance {
+	return Hash
 }
 
-func (b *fixedLB) Pick(id int) gopool.Pool {
+func (b *hashLB) Pick(id int) gopool.Pool {
 	idx := id % b.poolSize
 	return b.pools[idx]
 }
@@ -86,7 +86,7 @@ type roundRobinLB struct {
 }
 
 func (b *roundRobinLB) LoadBalance() LoadBalance {
-	return Fixed
+	return Hash
 }
 
 func (b *roundRobinLB) Pick(id int) gopool.Pool {
