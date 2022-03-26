@@ -2,9 +2,9 @@ package mr_smart
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/cloudwego/netpoll"
+	"github.com/pkg/errors"
 	"github.com/ywengineer/mr.smart/codec"
 	"go.uber.org/zap"
 	"sync"
@@ -37,8 +37,11 @@ func NewSmartServer(initializer []ChannelInitializer) (*smartServer, error) {
 }
 
 func (s *smartServer) Serve(network, addr string) (context.Context, error) {
-	defer s.lock.Unlock()
 	s.lock.Lock()
+	defer s.lock.Unlock()
+	if atomic.CompareAndSwapInt32(&s.running, 0, 1) == false {
+		return nil, errors.New("start smart server failed. maybe already started")
+	}
 	listener, err := netpoll.CreateListener(network, addr)
 	if err != nil {
 		return nil, err
@@ -48,9 +51,6 @@ func (s *smartServer) Serve(network, addr string) (context.Context, error) {
 	s.eventLoop = eventLoop
 	s.ctx = rootCtx
 	s.shutdownHook = cancel
-	if atomic.CompareAndSwapInt32(&s.running, 0, 1) == false {
-		return nil, errors.New("start smart server failed")
-	}
 	// start listen loop ...
 	go func() {
 		err = eventLoop.Serve(listener)
@@ -63,8 +63,8 @@ func (s *smartServer) Serve(network, addr string) (context.Context, error) {
 }
 
 func (s *smartServer) Shutdown() error {
-	defer s.lock.Unlock()
 	s.lock.Lock()
+	defer s.lock.Unlock()
 	running := atomic.LoadInt32(&s.running)
 	if running == 0 {
 		return errors.New("mr. smart server is not running")
