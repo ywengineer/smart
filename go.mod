@@ -1,11 +1,12 @@
 module github.com/ywengineer/mr.smart
 
-go 1.18
+go 1.17
 
 require (
 	github.com/bytedance/gopkg v0.0.0-20210705062217-74c74ebadcae
 	github.com/bytedance/sonic v1.1.1
 	github.com/cloudwego/netpoll v0.2.1
+	github.com/pkg/errors v0.9.1
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	github.com/ywengineer/g-util v0.0.0-20220316045900-7a0e2f37a711
 	go.uber.org/zap v1.21.0

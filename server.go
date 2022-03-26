@@ -81,7 +81,7 @@ func (s *smartServer) onConnRead(ctx context.Context, conn netpoll.Connection) e
 	fd := conn.(netpoll.Conn).Fd()
 	// channel not registered
 	if channel, ok := s.channels.Load(fd); ok == false {
-		serverLogger.Error("not registered channel.", zap.Int("fd", fd))
+		srvLogger.Error("not registered channel.", zap.Int("fd", fd))
 		_ = conn.Close()
 		return fmt.Errorf("channel [%d] not registered", fd)
 	} else { // registered

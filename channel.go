@@ -3,12 +3,17 @@ package mr_smart
 import (
 	"context"
 	"encoding/binary"
-	"errors"
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/cloudwego/netpoll"
+	"github.com/pkg/errors"
 	"github.com/ywengineer/mr.smart/codec"
 	"go.uber.org/zap"
 )
+
+type Request struct {
+	messageCode int
+	body        []byte
+}
 
 type SocketChannel struct {
 	ctx       context.Context
@@ -44,8 +49,11 @@ func (h *SocketChannel) Close() error {
 }
 
 func (h *SocketChannel) send(data []byte) error {
+	if h.conn == nil {
+		return errors.New("SocketChannel is not initialized correctly")
+	}
 	if _, err := h.conn.Writer().WriteBinary(data); err != nil {
-		serverLogger.Error("write data error", zap.Error(err))
+		srvLogger.Error("write data error", zap.Error(err))
 		return err
 	}
 	return nil
@@ -75,16 +83,16 @@ func (h *SocketChannel) onMessageRead() error {
 	reader := h.conn.Reader()
 	// 消息结构(len(4) + code(4) + body(len - 4))
 	if reader.Len() < MsgSizeLength {
-		serverLogger.Info("not enough data")
+		srvLogger.Info("not enough data")
 		return errors.New("not enough data")
 	}
 	if data, err := reader.Peek(MsgSizeLength); err != nil {
-		serverLogger.Error("read length failed.", zap.Error(err))
+		srvLogger.Error("read length failed.", zap.Error(err))
 		return err
 	} else {
 		pkgSize := int(h.byteOrder.Uint32(data))
 		if reader.Len() < pkgSize+MsgSizeLength {
-			serverLogger.Info("message body is not enough")
+			srvLogger.Info("message body is not enough")
 			return errors.New("message body is not enough")
 		} else {
 			_ = reader.Skip(MsgSizeLength)
@@ -95,14 +103,39 @@ func (h *SocketChannel) onMessageRead() error {
 			bodyBytes, _ := pkg.ReadBinary(pkgSize - MsgSizeCode)
 			// todo need ObjectPool?
 			req := &Request{
-				channel:     h,
 				messageCode: msgCode,
 				body:        bodyBytes,
 			}
 			h.LaterRun(func() {
-				dispatchRequest(req)
+				h.doRequest(req)
 			})
 		}
-	}
+	} //
 	return nil
+}
+
+func (h *SocketChannel) doRequest(req *Request) {
+	hd := findHandlerDefinition(req.messageCode)
+	if hd == nil {
+		srvLogger.Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
+		return
+	}
+	in := hd.createIn()
+	// decode message
+	if err := h.codec.Decode(req.body, in); err != nil {
+		// decode failed. close channel
+		srvLogger.Info("decode message error. suspicious channel, close it.", zap.Error(err))
+		_ = h.Close()
+		return
+	}
+	response := hd.invoke(h, in)
+	// oneway message
+	if response == nil {
+		srvLogger.Info("response is nil for handler or is one way message", zap.Int("msgCode", req.messageCode))
+		return
+	}
+	// send response
+	if err := h.Send(response); err != nil {
+		srvLogger.Error("send response error", zap.Error(err))
+	}
 }
