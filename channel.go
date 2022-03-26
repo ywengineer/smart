@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/cloudwego/netpoll"
 	"github.com/ywengineer/mr.smart/codec"
@@ -21,6 +20,7 @@ type SocketChannel struct {
 	handlers  []ChannelHandler
 }
 
+// all data and event callback run in worker related SocketChannel
 func (h *SocketChannel) Send(msg interface{}) error {
 	// already encoded, send directly.
 	if data, ok := msg.([]byte); ok {
@@ -34,29 +34,41 @@ func (h *SocketChannel) Send(msg interface{}) error {
 	}
 }
 
+// run task in worker related SocketChannel
 func (h *SocketChannel) LaterRun(task func()) {
 	h.worker.CtxGo(h.ctx, task)
 }
 
+func (h *SocketChannel) Close() error {
+	return h.conn.Close()
+}
+
 func (h *SocketChannel) send(data []byte) error {
-	_, err := h.conn.Writer().WriteBinary(data)
-	return err
+	if _, err := h.conn.Writer().WriteBinary(data); err != nil {
+		serverLogger.Error("write data error", zap.Error(err))
+		return err
+	}
+	return nil
 }
 
 func (h *SocketChannel) onOpen() {
-	if len(h.handlers) > 0 {
-		for _, handler := range h.handlers {
-			handler.OnOpen(h)
+	h.LaterRun(func() {
+		if len(h.handlers) > 0 {
+			for _, handler := range h.handlers {
+				handler.OnOpen(h)
+			}
 		}
-	}
+	})
 }
 
 func (h *SocketChannel) onClose() {
-	if len(h.handlers) > 0 {
-		for _, handler := range h.handlers {
-			handler.OnClose(h)
+	h.LaterRun(func() {
+		if len(h.handlers) > 0 {
+			for _, handler := range h.handlers {
+				handler.OnClose(h)
+			}
 		}
-	}
+	})
 }
 
 func (h *SocketChannel) onMessageRead() error {
@@ -81,19 +93,13 @@ func (h *SocketChannel) onMessageRead() error {
 			codeBytes, _ := pkg.Next(MsgSizeCode)
 			msgCode := int(h.byteOrder.Uint32(codeBytes))
 			bodyBytes, _ := pkg.ReadBinary(pkgSize - MsgSizeCode)
-			req := getRequestBodyModel(msgCode)
-			if req == nil {
-				serverLogger.Info("request type not found for message code", zap.Int("msgCode", msgCode))
-				return fmt.Errorf("request type not found for message code: %d", msgCode)
-			}
-			if err = h.codec.Decode(bodyBytes, req); err != nil {
-				serverLogger.Info("decode message error", zap.Error(err))
-				return fmt.Errorf("decode message error: %s", err.Error())
-			}
-			dispatchRequest(&Request{
-				request:     h,
+			req := &Request{
+				channel:     h,
 				messageCode: msgCode,
-				body:        req,
+				body:        bodyBytes,
+			}
+			h.LaterRun(func() {
+				dispatchRequest(req)
 			})
 		}
 	}

@@ -14,7 +14,7 @@ func init() {
 	SetWorkerManager(wm)
 }
 
-// SetWorkerManager set custom worker manager for process client request
+// SetWorkerManager set custom worker manager for process client channel
 func SetWorkerManager(manager WorkerManager) {
 	workers = manager
 }
@@ -27,7 +27,7 @@ type WorkerManager interface {
 	Pick(id int) gopool.Pool
 }
 
-// NewWorkerManager create default worker manager for process client request
+// NewWorkerManager create default worker manager for process client channel
 func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
 	if poolSize < 1 {
 		serverLogger.Error("set invalid poolSize", zap.Int("poolSize", poolSize))
@@ -54,5 +54,5 @@ func (m *defaultWorkerManager) Pick(id int) gopool.Pool {
 }
 
 func (m *defaultWorkerManager) errorHandler(ctx context.Context, err interface{}) {
-	serverLogger.Error("process request error", zap.Any("error", err))
+	serverLogger.Error("process channel error", zap.Any("error", err))
 }
