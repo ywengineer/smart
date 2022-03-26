@@ -94,7 +94,6 @@ func (h *SocketChannel) onMessageRead() error {
 		} else {
 			_ = reader.Skip(MsgSizeLength)
 			pkg, _ := reader.Slice(pkgSize)
-			// todo need ObjectPool?
 			codeBytes, _ := pkg.ReadBinary(MsgSizeCode)
 			req := getRequest()
 			req.messageCode = int(h.byteOrder.Uint32(codeBytes))
@@ -115,7 +114,7 @@ func (h *SocketChannel) doRequest(req *request) {
 		srvLogger.Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
 		return
 	}
-	in := hd.createIn()
+	in := hd.inPool.Get()
 	// decode message
 	if err := h.codec.Decode(req.body, in); err != nil {
 		// decode failed. close channel

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestHandler(t *testing.T) {
+func TestPBCodec(t *testing.T) {
 	p := sync.Pool{
 		New: func() interface{} {
 			return &message.ForeignMessage{}
@@ -25,5 +25,24 @@ func TestHandler(t *testing.T) {
 	req = p.Get()
 	data, _ = json.Encode(&message.ForeignMessage{C: 3})
 	json.Decode(data, req)
+	t.Logf("%p = %v", req, req)
+}
+
+func TestJSONCodec(t *testing.T) {
+	p := sync.Pool{
+		New: func() interface{} {
+			return &Req{}
+		},
+	}
+	json := codec.JSONCodec{}
+
+	req := p.Get().(*Req)
+	json.Decode([]byte(`{"ping": 1, "extra": "abc"}`), req)
+	t.Logf("%p = %v", req, req)
+
+	req.Reset()
+	p.Put(req)
+	req = p.Get().(*Req)
+	json.Decode([]byte(`{"ping": 1}`), req)
 	t.Logf("%p = %v", req, req)
 }

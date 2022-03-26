@@ -3,6 +3,7 @@ package mr_smart
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/ywengineer/mr.smart/message"
 	"go.uber.org/zap"
 	"reflect"
 	"strconv"
@@ -38,7 +39,7 @@ func RegisterModule(module SmartModule) error {
 		in0 := mSignature.In(0)
 		// error
 		in1 := mSignature.In(1)
-		if in0.Kind() != reflect.Ptr || in0 != TypeSocketChannel || in1.Kind() != reflect.Ptr {
+		if in0.Kind() != reflect.Ptr || in0 != TypeSocketChannel || in1.Kind() != reflect.Ptr || !in1.Implements(message.TypeReducible) {
 			return createMethodSignatureError(mName)
 		}
 		// 1th out must be ptr if num out greater than 0
@@ -63,5 +64,5 @@ func RegisterModule(module SmartModule) error {
 }
 
 func createMethodSignatureError(mName string) error {
-	return fmt.Errorf("handler[%s] signature must be Handler[1-9][0-9]*(*SocketChannel, *RequestType) [*ResponseType]", mName)
+	return fmt.Errorf("handler[%s] signature must be Handler[1-9][0-9]*(*SocketChannel, *Reducible) [*ResponseType]", mName)
 }
