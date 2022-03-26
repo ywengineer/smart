@@ -103,7 +103,6 @@ func (h *SocketChannel) onMessageRead() error {
 			req.body, _ = pkg.ReadBinary(pkgSize - protocolCodeBytes)
 			_ = pkg.Release()
 			h.LaterRun(func() {
-				defer releaseRequest(req)
 				h.doRequest(req)
 			})
 		}
@@ -112,7 +111,8 @@ func (h *SocketChannel) onMessageRead() error {
 }
 
 func (h *SocketChannel) doRequest(req *request) {
-	hd := findHandlerDefinition(req.messageCode)
+	defer releaseRequest(req)
+	hd := hManager.findHandlerDefinition(req.messageCode)
 	if hd == nil {
 		srvLogger.Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
 		return
@@ -128,7 +128,6 @@ func (h *SocketChannel) doRequest(req *request) {
 	response := hd.invoke(h, in)
 	// oneway message
 	if response == nil {
-		srvLogger.Info("response is nil for handler or is one way message", zap.Int("msgCode", req.messageCode))
 		return
 	}
 	// send response

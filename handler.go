@@ -8,7 +8,9 @@ import (
 	"sync"
 )
 
-var handlerMap = make(map[int]*handlerDefinition, 1000)
+var hManager = &handlerManager{
+	handlerMap: make(map[int]*handlerDefinition, 1000),
+}
 
 // handler structure
 // code : handler for message code
@@ -20,29 +22,6 @@ type handlerDefinition struct {
 	method      reflect.Value
 	inType      reflect.Type // must be ptr
 	inPool      *sync.Pool
-}
-
-func findHandlerDefinition(msgCode int) *handlerDefinition {
-	return handlerMap[msgCode]
-}
-
-func addHandlerDefinition(def *handlerDefinition) {
-	if _, ok := handlerMap[def.messageCode]; ok {
-		srvLogger.Warn("handler already exists", zap.Int("msgCode", def.messageCode))
-	} else {
-		def.inPool = &sync.Pool{
-			New: func(hd *handlerDefinition) func() interface{} {
-				return func() interface{} {
-					in := hd.inType
-					if in.Kind() == reflect.Ptr {
-						in = in.Elem()
-					}
-					return reflect.New(in).Interface()
-				}
-			}(def),
-		}
-		handlerMap[def.messageCode] = def
-	}
 }
 
 func (hd *handlerDefinition) invoke(channel *SocketChannel, in interface{}) interface{} {
@@ -59,4 +38,31 @@ func (hd *handlerDefinition) invoke(channel *SocketChannel, in interface{}) inte
 		return nil
 	}
 	return out[0].Interface()
+}
+
+type handlerManager struct {
+	handlerMap map[int]*handlerDefinition
+}
+
+func (hm *handlerManager) findHandlerDefinition(msgCode int) *handlerDefinition {
+	return hm.handlerMap[msgCode]
+}
+
+func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
+	if _, ok := hm.handlerMap[def.messageCode]; ok {
+		srvLogger.Warn("handler already exists", zap.Int("msgCode", def.messageCode))
+	} else {
+		def.inPool = &sync.Pool{
+			New: func(hd *handlerDefinition) func() interface{} {
+				return func() interface{} {
+					in := hd.inType
+					if in.Kind() == reflect.Ptr {
+						in = in.Elem()
+					}
+					return reflect.New(in).Interface()
+				}
+			}(def),
+		}
+		hm.handlerMap[def.messageCode] = def
+	}
 }

@@ -52,7 +52,7 @@ func RegisterModule(module SmartModule) error {
 		if code, err := strconv.Atoi(s); err != nil {
 			return errors.WithMessage(err, fmt.Sprintf("handler name must be %s[1-9][0-9]*", HandlerPrefix))
 		} else {
-			addHandlerDefinition(&handlerDefinition{
+			hManager.addHandlerDefinition(&handlerDefinition{
 				messageCode: code,
 				name:        mName,
 				inType:      in1,

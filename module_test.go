@@ -20,26 +20,26 @@ type Res struct {
 	Pong int `json:"pong"`
 }
 
-type Module struct {
+type TestModule struct {
 }
 
-func (m *Module) Name() string {
+func (m *TestModule) Name() string {
 	return "TestModule"
 }
 
-func (m *Module) Handler1001(channel *SocketChannel, req *Req) {
+func (m *TestModule) Handler1001(channel *SocketChannel, req *Req) {
 	srvLogger.Info("Handler1001 invoked", zap.Any("req", *req))
 }
 
-func (m *Module) Handler1002(channel *SocketChannel, req *Req) {
+func (m *TestModule) Handler1002(channel *SocketChannel, req *Req) {
 	srvLogger.Info("Handler1002 invoked", zap.Any("req", *req))
 }
 
-func (m *Module) Handler1003(channel *SocketChannel, req *Req) {
+func (m *TestModule) Handler1003(channel *SocketChannel, req *Req) {
 	srvLogger.Info("Handler1003 invoked", zap.Any("req", *req))
 }
 
-func (m *Module) Handler1004(channel *SocketChannel, req *Req) *Res {
+func (m *TestModule) Handler1004(channel *SocketChannel, req *Req) *Res {
 	srvLogger.Info("Handler1004 invoked", zap.Any("req", *req))
 	return &Res{
 		Pong: req.Ping,
@@ -47,7 +47,7 @@ func (m *Module) Handler1004(channel *SocketChannel, req *Req) *Res {
 }
 
 func TestRegisterModule(t *testing.T) {
-	err := RegisterModule(&Module{})
+	err := RegisterModule(&TestModule{})
 	if err != nil {
 		t.Errorf("%v", err)
 		t.FailNow()
