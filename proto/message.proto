@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package message_def;
+
+option go_package = "../message";
+
+message ForeignMessage {
+    int32 c = 1;
+    int32 d = 2;
+}

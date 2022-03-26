@@ -10,11 +10,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type Request struct {
-	messageCode int
-	body        []byte
-}
-
 type SocketChannel struct {
 	ctx       context.Context
 	fd        int
@@ -52,7 +47,9 @@ func (h *SocketChannel) send(data []byte) error {
 	if h.conn == nil {
 		return errors.New("SocketChannel is not initialized correctly")
 	}
-	if _, err := h.conn.Writer().WriteBinary(data); err != nil {
+	writer := h.conn.Writer()
+	defer writer.Flush()
+	if _, err := writer.WriteBinary(data); err != nil {
 		srvLogger.Error("write data error", zap.Error(err))
 		return err
 	}
@@ -97,16 +94,14 @@ func (h *SocketChannel) onMessageRead() error {
 		} else {
 			_ = reader.Skip(MsgSizeLength)
 			pkg, _ := reader.Slice(pkgSize)
-			defer pkg.Release()
-			codeBytes, _ := pkg.Next(MsgSizeCode)
-			msgCode := int(h.byteOrder.Uint32(codeBytes))
-			bodyBytes, _ := pkg.ReadBinary(pkgSize - MsgSizeCode)
 			// todo need ObjectPool?
-			req := &Request{
-				messageCode: msgCode,
-				body:        bodyBytes,
-			}
+			codeBytes, _ := pkg.ReadBinary(MsgSizeCode)
+			req := getRequest()
+			req.messageCode = int(h.byteOrder.Uint32(codeBytes))
+			req.body, _ = pkg.ReadBinary(pkgSize - MsgSizeCode)
+			_ = pkg.Release()
 			h.LaterRun(func() {
+				defer releaseRequest(req)
 				h.doRequest(req)
 			})
 		}
@@ -114,7 +109,7 @@ func (h *SocketChannel) onMessageRead() error {
 	return nil
 }
 
-func (h *SocketChannel) doRequest(req *Request) {
+func (h *SocketChannel) doRequest(req *request) {
 	hd := findHandlerDefinition(req.messageCode)
 	if hd == nil {
 		srvLogger.Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))

@@ -63,5 +63,5 @@ func RegisterModule(module SmartModule) error {
 }
 
 func createMethodSignatureError(mName string) error {
-	return fmt.Errorf("handler[%s] signature must be HandlerXXX(*SocketChannel, *RequestType) [*ResponseType]", mName)
+	return fmt.Errorf("handler[%s] signature must be Handler[1-9][0-9]*(*SocketChannel, *RequestType) [*ResponseType]", mName)
 }

@@ -6,7 +6,8 @@ import (
 )
 
 type Req struct {
-	Ping int `json:"ping"`
+	Ping  int    `json:"ping"`
+	Extra string `json:"extra"`
 }
 
 type Res struct {
@@ -50,19 +51,19 @@ func TestRegisterModule(t *testing.T) {
 	}
 	jc := &codec.JSONCodec{}
 	channel := &SocketChannel{codec: jc}
-	channel.doRequest(&Request{
+	channel.doRequest(&request{
 		messageCode: 1001,
 		body:        []byte(`{"ping": 1001}`),
 	})
-	channel.doRequest(&Request{
+	channel.doRequest(&request{
 		messageCode: 1002,
 		body:        []byte(`{"ping": 1002}`),
 	})
-	channel.doRequest(&Request{
+	channel.doRequest(&request{
 		messageCode: 1003,
 		body:        []byte(`{"ping": 1003}`),
 	})
-	channel.doRequest(&Request{
+	channel.doRequest(&request{
 		messageCode: 1004,
 		body:        []byte(`{"ping": 1004}`),
 	})
