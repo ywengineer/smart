@@ -21,7 +21,8 @@ func FindHandlerDefinition(msgCode int) *HandlerDefinition {
 	return nil
 }
 
-func (hd *HandlerDefinition) NewIn() interface{} {
+// todo need ObjectPool?
+func (hd *HandlerDefinition) CreateIn() interface{} {
 	in := hd.inType
 	if in.Kind() == reflect.Ptr {
 		in = in.Elem()

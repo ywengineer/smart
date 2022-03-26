@@ -93,6 +93,7 @@ func (h *SocketChannel) onMessageRead() error {
 			codeBytes, _ := pkg.Next(MsgSizeCode)
 			msgCode := int(h.byteOrder.Uint32(codeBytes))
 			bodyBytes, _ := pkg.ReadBinary(pkgSize - MsgSizeCode)
+			// todo need ObjectPool?
 			req := &Request{
 				channel:     h,
 				messageCode: msgCode,

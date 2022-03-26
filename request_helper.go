@@ -19,7 +19,7 @@ func dispatchRequest(req *Request) {
 		serverLogger.Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
 		return
 	}
-	in := hd.NewIn()
+	in := hd.CreateIn()
 	// decode message
 	if err := req.channel.codec.Decode(req.body, in); err != nil {
 		// decode failed. close channel
