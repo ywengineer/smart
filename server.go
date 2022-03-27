@@ -54,6 +54,7 @@ func (s *smartServer) Serve(network, addr string) (context.Context, error) {
 	s.ctx, s.shutdownHook = context.WithCancel(context.Background())
 	eventLoop, _ := netpoll.NewEventLoop(s.onConnRead, netpoll.WithOnPrepare(s.onConnPrepare), netpoll.WithOnConnect(s.onConnOpen))
 	s.eventLoop = eventLoop
+	s.status = running
 	// start listen loop ...
 	go func() {
 		err = eventLoop.Serve(listener)
