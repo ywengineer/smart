@@ -20,23 +20,28 @@ const (
 )
 
 type smartServer struct {
-	lock         sync.Mutex
-	status       status
-	ctx          context.Context
-	shutdownHook context.CancelFunc
-	eventLoop    netpoll.EventLoop
-	channels     sync.Map // key=fd, value=connection
-	channelCount int32    // accept counter
-	initializers []ChannelInitializer
+	lock          sync.Mutex
+	status        status
+	ctx           context.Context
+	shutdownHook  context.CancelFunc
+	eventLoop     netpoll.EventLoop
+	channels      sync.Map // key=fd, value=connection
+	channelCount  int32    // accept counter
+	initializers  []ChannelInitializer
+	workerManager WorkerManager
 }
 
-func NewSmartServer(initializer []ChannelInitializer) (*smartServer, error) {
+func NewSmartServer(worker WorkerManager, initializer []ChannelInitializer) (*smartServer, error) {
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}
+	if worker == nil {
+		worker, _ = NewWorkerManager(1, RoundRobin)
+	}
 	server := &smartServer{
-		status:       prepared,
-		initializers: initializer,
+		status:        prepared,
+		workerManager: worker,
+		initializers:  initializer,
 	}
 	return server, nil
 }
@@ -101,7 +106,7 @@ func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) c
 		fd:   conn.(netpoll.Conn).Fd(),
 		conn: conn,
 	}
-	channel.worker = wManager.Pick(channel.fd)
+	channel.worker = s.workerManager.Pick(channel.fd)
 	for _, initializer := range s.initializers {
 		initializer(channel)
 	}

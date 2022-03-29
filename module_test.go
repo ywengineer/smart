@@ -3,6 +3,7 @@ package mr_smart
 import (
 	"github.com/ywengineer/mr.smart/codec"
 	"go.uber.org/zap"
+	"regexp"
 	"testing"
 )
 
@@ -27,20 +28,20 @@ func (m *TestModule) Name() string {
 	return "TestModule"
 }
 
-func (m *TestModule) Handler1001(channel *SocketChannel, req *Req) {
-	srvLogger.Info("Handler1001 invoked", zap.Any("req", *req))
+func (m *TestModule) RegisterAccount1001(channel *SocketChannel, req *Req) {
+	srvLogger.Info("RegisterAccount1001 invoked", zap.Any("req", *req))
 }
 
-func (m *TestModule) Handler1002(channel *SocketChannel, req *Req) {
-	srvLogger.Info("Handler1002 invoked", zap.Any("req", *req))
+func (m *TestModule) FindFriend1002(channel *SocketChannel, req *Req) {
+	srvLogger.Info("FindFriend1002 invoked", zap.Any("req", *req))
 }
 
-func (m *TestModule) Handler1003(channel *SocketChannel, req *Req) {
-	srvLogger.Info("Handler1003 invoked", zap.Any("req", *req))
+func (m *TestModule) UseItem1003(channel *SocketChannel, req *Req) {
+	srvLogger.Info("UseItem1003 invoked", zap.Any("req", *req))
 }
 
-func (m *TestModule) Handler1004(channel *SocketChannel, req *Req) *Res {
-	srvLogger.Info("Handler1004 invoked", zap.Any("req", *req))
+func (m *TestModule) StartFight1004(channel *SocketChannel, req *Req) *Res {
+	srvLogger.Info("StartFight1004 invoked", zap.Any("req", *req))
 	return &Res{
 		Pong: req.Ping,
 	}
@@ -70,4 +71,17 @@ func TestRegisterModule(t *testing.T) {
 		messageCode: 1004,
 		body:        []byte(`{"ping": 1004}`),
 	})
+}
+
+func TestRegex(t *testing.T) {
+	r := regexp.MustCompile("^\\D+([1-9][0-9]*)$")
+	t.Log(r.String())
+	t.Logf("%v", r.FindAllString("Test1001", -1))
+	t.Logf("%v", r.FindAllStringSubmatch("Test1001", -1))
+	t.Logf("%v", r.FindAllStringSubmatch("aTest1001", -1))
+	t.Logf("%v", r.FindAllStringSubmatch("fTest10021", -1))
+	t.Logf("%v", r.FindStringSubmatch("Test100113"))
+
+	r1 := regexp.MustCompile("\\D+")
+	t.Logf("%s", r1.ReplaceAllString("Test100113a", ""))
 }

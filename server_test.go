@@ -8,7 +8,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	srv, err := NewSmartServer([]ChannelInitializer{
+	srv, err := NewSmartServer(nil, []ChannelInitializer{
 		WithByteOrder(func() binary.ByteOrder {
 			return binary.LittleEndian
 		}),

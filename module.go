@@ -7,7 +7,6 @@ import (
 	"go.uber.org/zap"
 	"reflect"
 	"strconv"
-	"strings"
 )
 
 type SmartModule interface {
@@ -28,8 +27,9 @@ func RegisterModule(module SmartModule) error {
 		method := mv.Method(mIndex)
 		mName := mv.Type().Method(mIndex).Name
 		mSignature := method.Type()
-		if !strings.HasPrefix(mName, HandlerPrefix) {
-			srvLogger.Debug("not a request handler", zap.String("method", mName))
+		handlerMatched := handlerSignatureRegexp.FindStringSubmatch(mName)
+		if len(handlerMatched) != 2 {
+			srvLogger.Debug("not a request handler", zap.String("method", mName), zap.String("regexp", handlerRegexp))
 			continue
 		}
 		if mSignature.NumIn() != 2 {
@@ -48,9 +48,9 @@ func RegisterModule(module SmartModule) error {
 				return createMethodSignatureError(mName)
 			}
 		}
-		s := mName[HandlerPrefixLength:]
+		s := handlerMatched[1]
 		if code, err := strconv.Atoi(s); err != nil {
-			return errors.WithMessage(err, fmt.Sprintf("handler name must be %s[1-9][0-9]*", HandlerPrefix))
+			return errors.WithMessage(err, fmt.Sprintf("handler name must be match regexp[%s]", handlerRegexp))
 		} else {
 			hManager.addHandlerDefinition(&handlerDefinition{
 				messageCode: code,

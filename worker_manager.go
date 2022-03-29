@@ -7,22 +7,6 @@ import (
 	"go.uber.org/zap"
 )
 
-var wManager WorkerManager
-
-func init() {
-	wm, _ := NewWorkerManager(1, RoundRobin)
-	SetWorkerManager(wm)
-}
-
-// SetWorkerManager set custom worker manager for process client channel
-func SetWorkerManager(manager WorkerManager) {
-	wManager = manager
-}
-
-func GetWorkManager() WorkerManager {
-	return wManager
-}
-
 type WorkerManager interface {
 	Pick(id int) gopool.Pool
 }
