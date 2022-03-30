@@ -2,6 +2,7 @@ package mr_smart
 
 import (
 	"github.com/ywengineer/mr.smart/codec"
+	"github.com/ywengineer/mr.smart/log"
 	"go.uber.org/zap"
 	"regexp"
 	"testing"
@@ -29,19 +30,19 @@ func (m *TestModule) Name() string {
 }
 
 func (m *TestModule) RegisterAccount1001(channel *SocketChannel, req *Req) {
-	srvLogger.Info("RegisterAccount1001 invoked", zap.Any("req", *req))
+	log.GetLogger().Info("RegisterAccount1001 invoked", zap.Any("req", *req))
 }
 
 func (m *TestModule) FindFriend1002(channel *SocketChannel, req *Req) {
-	srvLogger.Info("FindFriend1002 invoked", zap.Any("req", *req))
+	log.GetLogger().Info("FindFriend1002 invoked", zap.Any("req", *req))
 }
 
 func (m *TestModule) UseItem1003(channel *SocketChannel, req *Req) {
-	srvLogger.Info("UseItem1003 invoked", zap.Any("req", *req))
+	log.GetLogger().Info("UseItem1003 invoked", zap.Any("req", *req))
 }
 
 func (m *TestModule) StartFight1004(channel *SocketChannel, req *Req) *Res {
-	srvLogger.Info("StartFight1004 invoked", zap.Any("req", *req))
+	log.GetLogger().Info("StartFight1004 invoked", zap.Any("req", *req))
 	return &Res{
 		Pong: req.Ping,
 	}

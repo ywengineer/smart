@@ -3,6 +3,7 @@ package mr_smart
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/ywengineer/mr.smart/log"
 	"github.com/ywengineer/mr.smart/message"
 	"go.uber.org/zap"
 	"reflect"
@@ -29,7 +30,7 @@ func RegisterModule(module SmartModule) error {
 		mSignature := method.Type()
 		handlerMatched := handlerSignatureRegexp.FindStringSubmatch(mName)
 		if len(handlerMatched) < 2 {
-			srvLogger.Debug("not a request handler", zap.String("method", mName), zap.String("regexp", handlerRegexp))
+			log.GetLogger().Debug("not a request handler", zap.String("method", mName), zap.String("regexp", handlerRegexp))
 			continue
 		}
 		if mSignature.NumIn() != 2 {

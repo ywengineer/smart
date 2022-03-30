@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ywengineer/g-util/util"
 	"github.com/ywengineer/mr.smart/codec"
+	"github.com/ywengineer/mr.smart/log"
 	"github.com/ywengineer/mr.smart/server_config"
 	"go.uber.org/zap"
 	"sync"
@@ -98,7 +99,7 @@ func (s *smartServer) onConnRead(ctx context.Context, conn netpoll.Connection) e
 	fd := conn.(netpoll.Conn).Fd()
 	// channel not registered
 	if channel, ok := s.channels.Load(fd); ok == false {
-		srvLogger.Error("not registered channel.", zap.Int("fd", fd))
+		log.GetLogger().Error("not registered channel.", zap.Int("fd", fd))
 		_ = conn.Close()
 		return fmt.Errorf("channel [%d] not registered", fd)
 	} else { // registered

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/bytedance/gopkg/util/gopool"
+	"github.com/ywengineer/mr.smart/log"
 	"go.uber.org/zap"
 )
 
@@ -14,7 +15,7 @@ type WorkerManager interface {
 // NewWorkerManager create default worker manager for process client channel
 func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
 	if poolSize < 1 {
-		srvLogger.Error("set invalid poolSize", zap.Int("poolSize", poolSize))
+		log.GetLogger().Error("set invalid poolSize", zap.Int("poolSize", poolSize))
 		return nil, fmt.Errorf("set invalid poolSize[%d]", poolSize)
 	}
 	manager := &defaultWorkerManager{}
@@ -38,5 +39,5 @@ func (m *defaultWorkerManager) Pick(id int) gopool.Pool {
 }
 
 func (m *defaultWorkerManager) errorHandler(ctx context.Context, err interface{}) {
-	srvLogger.Error("process channel error", zap.Any("error", err))
+	log.GetLogger().Error("process channel error", zap.Any("error", err))
 }

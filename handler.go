@@ -1,6 +1,7 @@
 package mr_smart
 
 import (
+	"github.com/ywengineer/mr.smart/log"
 	"github.com/ywengineer/mr.smart/message"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -57,7 +58,7 @@ func (hm *handlerManager) findHandlerDefinition(msgCode int) *handlerDefinition 
 
 func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
 	if _, ok := hm._handlerMap[def.messageCode]; ok {
-		srvLogger.Warn("handler already exists", zap.Int("msgCode", def.messageCode))
+		log.GetLogger().Warn("handler already exists", zap.Int("msgCode", def.messageCode))
 	} else {
 		def.inPool = &sync.Pool{
 			New: func(hd *handlerDefinition) func() interface{} {
