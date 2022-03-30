@@ -6,10 +6,11 @@ import (
 )
 
 type Conf struct {
-	Network           string `json:"network" yaml:"network"`
-	Address           string `json:"address" yaml:"address"`
-	Workers           int    `json:"workers" yaml:"workers"`
-	WorkerLoadBalance string `json:"load_balance" yaml:"load-balance"`
+	Network           string                 `json:"network" yaml:"network"`
+	Address           string                 `json:"address" yaml:"address"`
+	Workers           int                    `json:"workers" yaml:"workers"`
+	WorkerLoadBalance string                 `json:"load_balance" yaml:"load-balance"`
+	Attach            map[string]interface{} `json:"attach" yaml:"attach"`
 }
 
 type Decoder interface {
