@@ -1,4 +1,4 @@
-package config
+package server_config
 
 import (
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
@@ -37,7 +37,7 @@ func newNacosTestClient(t *testing.T) config_client.IConfigClient {
 		constant.WithPassword("vspn"),
 		constant.WithLogLevel("debug"),
 	)
-	// create config client
+	// create server_config client
 	client, err := clients.NewConfigClient(
 		vo.NacosClientParam{
 			ClientConfig:  &cc,

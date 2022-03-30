@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ywengineer/g-util/util"
 	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/config"
+	"github.com/ywengineer/mr.smart/server_config"
 	"go.uber.org/zap"
 	"sync"
 	"sync/atomic"
@@ -31,17 +31,17 @@ type smartServer struct {
 	channelCount  int32    // accept counter
 	initializers  []ChannelInitializer
 	workerManager WorkerManager
-	conf          *config.Conf
+	conf          *server_config.Conf
 }
 
-func NewSmartServer(loader config.Loader, initializer []ChannelInitializer) (*smartServer, error) {
+func NewSmartServer(loader server_config.Loader, initializer []ChannelInitializer) (*smartServer, error) {
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}
-	// load config
+	// load server_config
 	conf, err := loader.Load()
 	if err != nil || conf == nil {
-		return nil, errors.WithMessage(err, "load server config error")
+		return nil, errors.WithMessage(err, "load server server_config error")
 	}
 	worker, _ := NewWorkerManager(util.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
 	server := &smartServer{
