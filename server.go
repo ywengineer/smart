@@ -43,7 +43,7 @@ func NewSmartServer(loader config.Loader, initializer []ChannelInitializer) (*sm
 	if err != nil || conf == nil {
 		return nil, errors.WithMessage(err, "load server config error")
 	}
-	worker, _ := NewWorkerManager(util.MaxInt(conf.Workers, 1), LoadBalance(conf.WorkerLoadBalance))
+	worker, _ := NewWorkerManager(util.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
 	server := &smartServer{
 		status:        prepared,
 		workerManager: worker,

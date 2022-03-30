@@ -1,0 +1,6 @@
+{
+  "network": "tcp",
+  "address": ":12345",
+  "workers": 1,
+  "load_balance": "rr"
+}

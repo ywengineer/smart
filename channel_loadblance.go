@@ -3,6 +3,7 @@ package mr_smart
 import (
 	"github.com/bytedance/gopkg/lang/fastrand"
 	"github.com/bytedance/gopkg/util/gopool"
+	"go.uber.org/zap"
 	"sync/atomic"
 )
 
@@ -22,6 +23,19 @@ type loadBalance interface {
 	LoadBalance() LoadBalance
 	// Choose the most qualified Pool
 	Pick(id int) gopool.Pool
+}
+
+func parseLoadBalance(lb string) LoadBalance {
+	switch lb {
+	case "random":
+		return Random
+	case "hash":
+		return Hash
+	case "rr":
+		return RoundRobin
+	}
+	srvLogger.Warn("unknown load balance, default to RoundRobin", zap.String("lb", lb))
+	return RoundRobin
 }
 
 func newLoadBalance(lb LoadBalance, pools []gopool.Pool) loadBalance {

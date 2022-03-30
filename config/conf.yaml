@@ -1,0 +1,4 @@
+network: "tcp"
+address: ":12345"
+workers: 1
+load-balance: "hash"
