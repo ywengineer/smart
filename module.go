@@ -28,7 +28,7 @@ func RegisterModule(module SmartModule) error {
 		mName := mv.Type().Method(mIndex).Name
 		mSignature := method.Type()
 		handlerMatched := handlerSignatureRegexp.FindStringSubmatch(mName)
-		if len(handlerMatched) != 2 {
+		if len(handlerMatched) < 2 {
 			srvLogger.Debug("not a request handler", zap.String("method", mName), zap.String("regexp", handlerRegexp))
 			continue
 		}
@@ -64,5 +64,5 @@ func RegisterModule(module SmartModule) error {
 }
 
 func createMethodSignatureError(mName string) error {
-	return fmt.Errorf("handler[%s] signature must be Handler[1-9][0-9]*(*SocketChannel, *Reducible) [*ResponseType]", mName)
+	return fmt.Errorf("handler[%s] signature must be %s(*SocketChannel, *Reducible) [*ResponseType]", handlerRegexp, mName)
 }

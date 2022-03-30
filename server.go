@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
+	"github.com/ywengineer/g-util/util"
 	"github.com/ywengineer/mr.smart/codec"
+	"github.com/ywengineer/mr.smart/config"
 	"go.uber.org/zap"
 	"sync"
 	"sync/atomic"
@@ -29,30 +31,35 @@ type smartServer struct {
 	channelCount  int32    // accept counter
 	initializers  []ChannelInitializer
 	workerManager WorkerManager
+	conf          *config.Conf
 }
 
-func NewSmartServer(worker WorkerManager, initializer []ChannelInitializer) (*smartServer, error) {
+func NewSmartServer(loader config.Loader, initializer []ChannelInitializer) (*smartServer, error) {
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}
-	if worker == nil {
-		worker, _ = NewWorkerManager(1, RoundRobin)
+	// load config
+	conf, err := loader.Load()
+	if err != nil || conf == nil {
+		return nil, errors.WithMessage(err, "load server config error")
 	}
+	worker, _ := NewWorkerManager(util.MaxInt(conf.Workers, 1), LoadBalance(conf.WorkerLoadBalance))
 	server := &smartServer{
 		status:        prepared,
 		workerManager: worker,
 		initializers:  initializer,
+		conf:          conf,
 	}
 	return server, nil
 }
 
-func (s *smartServer) Serve(network, addr string) (context.Context, error) {
+func (s *smartServer) Serve() (context.Context, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if s.status != prepared {
 		return nil, errors.New("start smart server failed. maybe already started or can not start again")
 	}
-	listener, err := netpoll.CreateListener(network, addr)
+	listener, err := netpoll.CreateListener(s.conf.Network, s.conf.Address)
 	if err != nil {
 		return nil, err
 	}

@@ -117,12 +117,13 @@ func (h *SocketChannel) doRequest(req *request) {
 		srvLogger.Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
 		return
 	}
-	in := hd.inPool.Get()
+	in := hd.getIn()
 	// decode message
 	if err := h.codec.Decode(req.body, in); err != nil {
 		// decode failed. close channel
 		srvLogger.Info("decode message error. suspicious channel, close it.", zap.Error(err))
 		_ = h.Close()
+		hd.releaseIn(in)
 		return
 	}
 	response := hd.invoke(h, in)

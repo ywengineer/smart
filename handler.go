@@ -25,19 +25,25 @@ type handlerDefinition struct {
 }
 
 func (hd *handlerDefinition) invoke(channel *SocketChannel, in interface{}) interface{} {
-	defer func() {
-		// no need to invoke Reset method when in is a protobuf message
-		if _, ok := in.(proto.Message); !ok {
-			in.(message.Reducible).Reset()
-		}
-		// release in to object pool
-		hd.inPool.Put(in)
-	}()
+	defer hd.releaseIn(in)
 	out := hd.method.Call([]reflect.Value{reflect.ValueOf(channel), reflect.ValueOf(in)})
 	if len(out) == 0 {
 		return nil
 	}
 	return out[0].Interface()
+}
+
+func (hd *handlerDefinition) releaseIn(in interface{}) {
+	// no need to invoke Reset method when in is a protobuf message
+	if _, ok := in.(proto.Message); !ok {
+		in.(message.Reducible).Reset()
+	}
+	// release in to object pool
+	hd.inPool.Put(in)
+}
+
+func (hd *handlerDefinition) getIn() interface{} {
+	return hd.inPool.Get()
 }
 
 type handlerManager struct {

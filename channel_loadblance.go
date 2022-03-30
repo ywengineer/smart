@@ -33,7 +33,7 @@ func newLoadBalance(lb LoadBalance, pools []gopool.Pool) loadBalance {
 	case RoundRobin:
 		return newRoundRobinLB(pools)
 	}
-	return newHashLB(pools)
+	return newRoundRobinLB(pools)
 }
 
 // randomLB

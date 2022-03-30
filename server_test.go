@@ -4,11 +4,14 @@ import (
 	"encoding/binary"
 	"github.com/ywengineer/g-util/util"
 	"github.com/ywengineer/mr.smart/codec"
+	"github.com/ywengineer/mr.smart/config"
 	"testing"
 )
 
 func TestServer(t *testing.T) {
-	srv, err := NewSmartServer(nil, []ChannelInitializer{
+	srv, err := NewSmartServer(&config.ValueLoader{
+		Conf: &config.Conf{Network: "tcp", Address: ":12345", Workers: 1, WorkerLoadBalance: 2},
+	}, []ChannelInitializer{
 		WithByteOrder(func() binary.ByteOrder {
 			return binary.LittleEndian
 		}),
@@ -20,7 +23,7 @@ func TestServer(t *testing.T) {
 		t.Errorf("create smart server failed. %v", err)
 		t.FailNow()
 	}
-	_, err = srv.Serve("tcp", ":12345")
+	_, err = srv.Serve()
 	if err != nil {
 		t.Errorf("start smart server failed. %v", err)
 		t.FailNow()
