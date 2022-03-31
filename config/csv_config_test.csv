@@ -1,0 +1,7 @@
+﻿"{id,int32}","{name,string}",(placeholder),"{age,int}",(placeholder),"{male,bool}","{address,json}"
+10001,name10001,,28,,1,"{""country"":""中国"",""province"":""四川"",""city"":""成都""}"
+10002,name10002,,29,,0,"{""country"":""中国"",""province"":""上海"",""city"":""静安区""}"
+10003,name10003,,30,,0,"{""country"":""中国"",""province"":""海南"",""city"":""三亚""}"
+10004,name10004,,31,,1,"{""country"":""美国"",""province"":""加州"",""city"":""伯克利""}"
+10005,name10005,,32,,0,"{""country"":""韩国"",""province"":""123"",""city"":""首尔""}"
+10006,name10006,,33,,1,"{""country"":""日本"",""province"":""东京"",""city"":""东京""}"
