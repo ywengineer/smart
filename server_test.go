@@ -10,6 +10,9 @@ import (
 )
 
 func TestServer(t *testing.T) {
+	// 1. load config: config.LoadConfig()
+	// 2. register handler: RegisterModule
+	// 3. create a smart server
 	srv, err := NewSmartServer(&server_config.ValueLoader{
 		Conf: &server_config.Conf{Network: "tcp", Address: ":12345", Workers: 1, WorkerLoadBalance: "rr"},
 	}, []ChannelInitializer{
@@ -21,10 +24,11 @@ func TestServer(t *testing.T) {
 		}),
 	})
 	assert.Nil(t, err)
+	// 4. start smart server
 	_, err = srv.Serve()
 	assert.Nil(t, err)
 	t.Log("smart server was started.")
 	_ = <-util.WatchQuitSignal()
-	// wait shutdown
+	// 5. wait smart server shutdown
 	t.Logf("smart server was stopped. %v", srv.Shutdown())
 }

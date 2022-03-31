@@ -9,7 +9,13 @@ import (
 )
 
 type WorkerManager interface {
-	Pick(id int) gopool.Pool
+	Pick(id int) Worker
+	Status() interface{}
+}
+
+type Worker interface {
+	Run(ctx context.Context, f func())
+	Status() interface{}
 }
 
 // NewWorkerManager create default worker manager for process client channel
@@ -22,22 +28,38 @@ func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
 	for idx := 0; idx < poolSize; idx++ {
 		p := gopool.NewPool(fmt.Sprintf("smart-handlers-%d", idx), 1, gopool.NewConfig())
 		p.SetPanicHandler(manager.errorHandler)
-		manager.pools = append(manager.pools, p)
+		manager.workers = append(manager.workers, &defaultWorker{runner: p})
 	}
-	manager.balance = newLoadBalance(lb, manager.pools)
+	manager.balance = newLoadBalance(lb, manager.workers)
 	return manager, nil
 }
 
 type defaultWorkerManager struct {
-	balance loadBalance   // load balancing method
-	pools   []gopool.Pool // all the pools
+	balance loadBalance // load balancing method
+	workers []Worker    // all the workers
 }
 
 // Pick will select the poller for use each time based on the LoadBalance.
-func (m *defaultWorkerManager) Pick(id int) gopool.Pool {
+func (m *defaultWorkerManager) Pick(id int) Worker {
 	return m.balance.Pick(id)
 }
 
 func (m *defaultWorkerManager) errorHandler(ctx context.Context, err interface{}) {
-	log.GetLogger().Error("process channel error", zap.Any("error", err))
+	log.GetLogger().Error("process worker task error", zap.Any("error", err))
+}
+
+func (m *defaultWorkerManager) Status() interface{} {
+	return nil
+}
+
+type defaultWorker struct {
+	runner gopool.Pool
+}
+
+func (w *defaultWorker) Run(ctx context.Context, f func()) {
+	w.runner.CtxGo(ctx, f)
+}
+
+func (w *defaultWorker) Status() interface{} {
+	return nil
 }

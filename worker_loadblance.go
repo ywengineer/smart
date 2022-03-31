@@ -2,7 +2,6 @@ package mr_smart
 
 import (
 	"github.com/bytedance/gopkg/lang/fastrand"
-	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/ywengineer/mr.smart/log"
 	"go.uber.org/zap"
 	"sync/atomic"
@@ -23,7 +22,7 @@ const (
 type loadBalance interface {
 	LoadBalance() LoadBalance
 	// Choose the most qualified Pool
-	Pick(id int) gopool.Pool
+	Pick(id int) Worker
 }
 
 func parseLoadBalance(lb string) LoadBalance {
@@ -39,7 +38,7 @@ func parseLoadBalance(lb string) LoadBalance {
 	return RoundRobin
 }
 
-func newLoadBalance(lb LoadBalance, pools []gopool.Pool) loadBalance {
+func newLoadBalance(lb LoadBalance, pools []Worker) loadBalance {
 	switch lb {
 	case Random:
 		return newRandomLB(pools)
@@ -52,12 +51,12 @@ func newLoadBalance(lb LoadBalance, pools []gopool.Pool) loadBalance {
 }
 
 // randomLB
-func newRandomLB(pools []gopool.Pool) loadBalance {
+func newRandomLB(pools []Worker) loadBalance {
 	return &randomLB{pools: pools, poolSize: len(pools)}
 }
 
 type randomLB struct {
-	pools    []gopool.Pool
+	pools    []Worker
 	poolSize int
 }
 
@@ -65,18 +64,18 @@ func (b *randomLB) LoadBalance() LoadBalance {
 	return Random
 }
 
-func (b *randomLB) Pick(id int) gopool.Pool {
+func (b *randomLB) Pick(id int) Worker {
 	idx := fastrand.Intn(b.poolSize)
 	return b.pools[idx]
 }
 
 // hashLB
-func newHashLB(pools []gopool.Pool) loadBalance {
+func newHashLB(pools []Worker) loadBalance {
 	return &hashLB{pools: pools, poolSize: len(pools)}
 }
 
 type hashLB struct {
-	pools    []gopool.Pool
+	pools    []Worker
 	poolSize int
 }
 
@@ -84,18 +83,18 @@ func (b *hashLB) LoadBalance() LoadBalance {
 	return Hash
 }
 
-func (b *hashLB) Pick(id int) gopool.Pool {
+func (b *hashLB) Pick(id int) Worker {
 	idx := id % b.poolSize
 	return b.pools[idx]
 }
 
 // roundRobinLB
-func newRoundRobinLB(pools []gopool.Pool) loadBalance {
+func newRoundRobinLB(pools []Worker) loadBalance {
 	return &roundRobinLB{pools: pools, poolSize: len(pools)}
 }
 
 type roundRobinLB struct {
-	pools    []gopool.Pool
+	pools    []Worker
 	accepted uintptr // accept counter
 	poolSize int
 }
@@ -104,7 +103,7 @@ func (b *roundRobinLB) LoadBalance() LoadBalance {
 	return Hash
 }
 
-func (b *roundRobinLB) Pick(id int) gopool.Pool {
+func (b *roundRobinLB) Pick(id int) Worker {
 	idx := int(atomic.AddUintptr(&b.accepted, 1)) % b.poolSize
 	return b.pools[idx]
 }

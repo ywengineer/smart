@@ -3,7 +3,6 @@ package mr_smart
 import (
 	"context"
 	"encoding/binary"
-	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
 	"github.com/ywengineer/mr.smart/codec"
@@ -20,7 +19,7 @@ type SocketChannel struct {
 	conn      netpoll.Connection
 	codec     codec.Codec
 	byteOrder binary.ByteOrder
-	worker    gopool.Pool
+	worker    Worker
 	handlers  []ChannelHandler
 }
 
@@ -40,7 +39,7 @@ func (h *SocketChannel) Send(msg interface{}) error {
 
 // run task in worker related SocketChannel
 func (h *SocketChannel) LaterRun(task func()) {
-	h.worker.CtxGo(h.ctx, task)
+	h.worker.Run(h.ctx, task)
 }
 
 func (h *SocketChannel) Close() error {
