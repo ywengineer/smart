@@ -2,6 +2,7 @@ package mr_smart
 
 import (
 	"encoding/binary"
+	"github.com/stretchr/testify/assert"
 	"github.com/ywengineer/g-util/util"
 	"github.com/ywengineer/mr.smart/codec"
 	"github.com/ywengineer/mr.smart/server_config"
@@ -19,17 +20,11 @@ func TestServer(t *testing.T) {
 			return &codec.JSONCodec{}
 		}),
 	})
-	if err != nil {
-		t.Errorf("create smart server failed. %v", err)
-		t.FailNow()
-	}
+	assert.Nil(t, err)
 	_, err = srv.Serve()
-	if err != nil {
-		t.Errorf("start smart server failed. %v", err)
-		t.FailNow()
-	}
+	assert.Nil(t, err)
 	t.Log("smart server was started.")
 	_ = <-util.WatchQuitSignal()
-
+	// wait shutdown
 	t.Logf("smart server was stopped. %v", srv.Shutdown())
 }
