@@ -2,6 +2,7 @@ package mr_smart
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
@@ -117,6 +118,10 @@ func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) c
 	channel.worker = s.workerManager.Pick(channel.fd)
 	for _, initializer := range s.initializers {
 		initializer(channel)
+	}
+	// check byte order
+	if channel.byteOrder == nil {
+		channel.byteOrder = binary.LittleEndian
 	}
 	// check codec, default codec
 	if channel.codec == nil {

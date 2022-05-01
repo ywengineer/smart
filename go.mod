@@ -11,6 +11,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
+	github.com/xuri/excelize/v2 v2.5.0
 	github.com/ywengineer/g-util v0.0.0-20220316045900-7a0e2f37a711
 	go.uber.org/zap v1.21.0
 	golang.org/x/text v0.3.7
@@ -45,7 +46,6 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xuri/efp v0.0.0-20210322160811-ab561f5b45e3 // indirect
-	github.com/xuri/excelize/v2 v2.5.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
