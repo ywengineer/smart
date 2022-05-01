@@ -24,27 +24,27 @@ func WithByteOrder(f func() binary.ByteOrder) ChannelInitializer {
 	}
 }
 
-func AddLastHandler(f func() ChannelHandler) ChannelInitializer {
+func AppendHandler(f func() ChannelHandler) ChannelInitializer {
 	return func(channel *SocketChannel) {
 		channel.handlers = append(channel.handlers, f())
 	}
 }
 
-func AddFirstHandler(f func() ChannelHandler) ChannelInitializer {
+func PrependHandler(f func() ChannelHandler) ChannelInitializer {
 	return func(channel *SocketChannel) {
 		channel.handlers = append([]ChannelHandler{f()}, channel.handlers...)
 	}
 }
 
-func AddHandlerAt(f func() ChannelHandler, pos int) ChannelInitializer {
+func InsertHandlerAt(f func() ChannelHandler, pos int) ChannelInitializer {
 	if pos <= 0 {
-		return AddFirstHandler(f)
+		return PrependHandler(f)
 	}
 	return func(channel *SocketChannel) {
 		if pos <= 0 {
-			AddFirstHandler(f)(channel)
+			PrependHandler(f)(channel)
 		} else if pos >= len(channel.handlers) {
-			AddLastHandler(f)(channel) // channel.handlers = append(channel.handlers, f())
+			AppendHandler(f)(channel) // channel.handlers = append(channel.handlers, f())
 		} else {
 			hs := channel.handlers[:pos]
 			hs = append(hs, f())
