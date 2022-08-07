@@ -3,9 +3,9 @@ module github.com/ywengineer/mr.smart
 go 1.17
 
 require (
-	github.com/bytedance/gopkg v0.0.0-20210705062217-74c74ebadcae
+	github.com/bytedance/gopkg v0.0.0-20220413063733-65bf48ffb3a7
 	github.com/bytedance/sonic v1.1.1
-	github.com/cloudwego/netpoll v0.2.1
+	github.com/cloudwego/netpoll v0.2.6
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/nacos-group/nacos-sdk-go/v2 v2.0.1
 	github.com/pkg/errors v0.9.1
@@ -52,7 +52,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	golang.org/x/sys v0.0.0-20220110181412-a018aaa089fe // indirect
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/grpc v1.36.1 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect

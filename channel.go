@@ -23,7 +23,7 @@ type SocketChannel struct {
 	handlers  []ChannelHandler
 }
 
-// all data and event callback run in worker related SocketChannel
+// Send all data and event callback run in worker related SocketChannel
 func (h *SocketChannel) Send(msg interface{}) error {
 	// already encoded, send directly.
 	if data, ok := msg.([]byte); ok {
@@ -37,7 +37,7 @@ func (h *SocketChannel) Send(msg interface{}) error {
 	}
 }
 
-// run task in worker related SocketChannel
+// LaterRun run task in worker related SocketChannel
 func (h *SocketChannel) LaterRun(task func()) {
 	h.worker.Run(h.ctx, task)
 }
