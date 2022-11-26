@@ -43,7 +43,7 @@ func RegisterModule(module SmartModule) error {
 		if in0.Kind() != reflect.Ptr || in0 != TypeSocketChannel || in1.Kind() != reflect.Ptr || !in1.Implements(message.TypeReducible) {
 			return createMethodSignatureError(mName)
 		}
-		// 1th out must be ptr if num out greater than 0
+		// 1st out must be ptr if num out greater than 0
 		if mSignature.NumOut() > 0 {
 			if mSignature.Out(0).Kind() != reflect.Ptr {
 				return createMethodSignatureError(mName)
