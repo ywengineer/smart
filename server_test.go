@@ -26,7 +26,7 @@ func TestServer(t *testing.T) {
 		WithCodec(func() codec.Codec {
 			return codec.Json()
 		}),
-		AppendHandler(func() ChannelHandler { return &GameMessageHandler{} }),
+		AppendHandler(func() ChannelHandler { return NewGameMessageHandler() }),
 	})
 	// register game logic module
 	err = RegisterModule(&TestModule{})

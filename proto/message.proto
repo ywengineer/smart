@@ -5,6 +5,20 @@ package message_def;
 option go_package = "../message";
 
 message ForeignMessage {
-    int32 c = 1;
-    int32 d = 2;
+  int32 c = 1;
+  int32 d = 2;
+}
+
+enum Codec {
+  JSON = 0; // json
+  PROTO = 1; // protocol buffer
+  MSGPACK = 2; // msgpack
+  THRIFT = 3; // thrift
+}
+
+message ProtocolMessage {
+  int32 seq = 1; // SEQUENCE NUMBER 字段 32bits，表示数据包的 seqId，可用于多路复用，最好确保单个连接内递增
+  map<string, string> header = 2; // 请求头
+  Codec codec = 3; // 编码类型
+  bytes payload = 4; // 消息内容
 }
