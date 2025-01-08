@@ -10,6 +10,8 @@ import (
 	"github.com/ywengineer/mr.smart/server_config"
 	"github.com/ywengineer/mr.smart/utility"
 	"go.uber.org/zap"
+	"net"
+	"runtime"
 	"sync"
 	"sync/atomic"
 )
@@ -60,19 +62,24 @@ func (s *smartServer) Serve() (context.Context, error) {
 	if s.status != prepared {
 		return nil, errors.New("start smart server failed. maybe already started or can not start again")
 	}
-	listener, err := netpoll.CreateListener(s.conf.Network, s.conf.Address)
-	if err != nil {
-		return nil, err
-	}
 	s.ctx, s.shutdownHook = context.WithCancel(context.Background())
 	eventLoop, _ := netpoll.NewEventLoop(s.onConnRead, netpoll.WithOnPrepare(s.onConnPrepare), netpoll.WithOnConnect(s.onConnOpen))
 	s.eventLoop = eventLoop
 	s.status = running
 	// start listen loop ...
 	go func() {
-		err = eventLoop.Serve(listener)
-		// start failed or serve quit
-		if err != nil {
+		var listener net.Listener
+		var err error
+		if goos := runtime.GOOS; goos == "windows" {
+			if listener, err = net.Listen(s.conf.Network, s.conf.Address); err != nil {
+				utility.DefaultLogger().Panic("create server listener on windows error", zap.Error(err))
+			}
+		} else if listener, err = netpoll.CreateListener(s.conf.Network, s.conf.Address); err != nil {
+			utility.DefaultLogger().Panic("create server listener error", zap.Error(err))
+		}
+		if err = eventLoop.Serve(listener); err != nil {
+			utility.DefaultLogger().Panic("serve listener error", zap.Error(err))
+			// start failed or serve quit
 			_ = s.Shutdown()
 		}
 	}()
@@ -103,7 +110,7 @@ func (s *smartServer) onConnRead(ctx context.Context, conn netpoll.Connection) e
 		_ = conn.Close()
 		return fmt.Errorf("channel [%d] not registered", fd)
 	} else { // registered
-		return channel.(*SocketChannel).onMessageRead()
+		return channel.(*SocketChannel).onMessageRead(ctx)
 	}
 }
 

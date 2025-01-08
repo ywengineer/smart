@@ -1,6 +1,7 @@
 package mr_smart
 
 import (
+	"context"
 	"encoding/binary"
 	"github.com/ywengineer/mr.smart/codec"
 )
@@ -8,6 +9,7 @@ import (
 type ChannelHandler interface {
 	OnOpen(channel *SocketChannel)
 	OnClose(channel *SocketChannel)
+	OnMessage(ctx context.Context, channel *SocketChannel) error
 }
 
 type ChannelInitializer func(channel *SocketChannel)

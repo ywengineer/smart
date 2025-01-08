@@ -1,6 +1,7 @@
 package mr_smart
 
 import (
+	"context"
 	"github.com/ywengineer/mr.smart/message"
 	"github.com/ywengineer/mr.smart/utility"
 	"go.uber.org/zap"
@@ -52,6 +53,28 @@ type handlerManager struct {
 	_handlerMap map[int]*handlerDefinition
 }
 
+func (hm *handlerManager) invokeHandler(ctx context.Context, c *SocketChannel, req *request) {
+	hd := hm.findHandlerDefinition(req.messageCode)
+	if hd == nil {
+		utility.DefaultLogger().Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
+		return
+	}
+	in := hd.getIn()
+	// decode message
+	if err := c.codec.Decode(req.body, in); err != nil {
+		// decode failed. close channel
+		utility.DefaultLogger().Info("decode message error. suspicious channel, close it.", zap.Error(err))
+		_ = c.Close()
+		hd.releaseIn(in)
+	} else if response := hd.invoke(c, in); response != nil {
+		if err := c.Send(response); err != nil { // send response
+			utility.DefaultLogger().Error("send response error", zap.Error(err))
+		}
+	} else { // oneway message
+		// ignore
+	}
+}
+
 func (hm *handlerManager) findHandlerDefinition(msgCode int) *handlerDefinition {
 	return hm._handlerMap[msgCode]
 }
@@ -60,6 +83,7 @@ func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
 	if _, ok := hm._handlerMap[def.messageCode]; ok {
 		utility.DefaultLogger().Warn("handler already exists", zap.Int("msgCode", def.messageCode))
 	} else {
+		utility.DefaultLogger().Debug("register a new method handler", zap.Int("msgCode", def.messageCode))
 		def.inPool = &sync.Pool{
 			New: func(hd *handlerDefinition) func() interface{} {
 				return func() interface{} {
