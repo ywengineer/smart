@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/bytedance/sonic"
-	"github.com/ywengineer/mr.smart/log"
+	"github.com/ywengineer/mr.smart/utility"
 	"go.uber.org/zap"
 	"reflect"
 	"strings"
@@ -25,7 +25,7 @@ func (bl *baseLoader) buildHeader(record []string) ([]*header, error) {
 		if h.ignore == false { // [all, name, type, ....]
 			h.name, h.dataType = hDef[1], hDef[2]
 		} else if strings.ContainsRune(rcd, '{') {
-			log.GetLogger().Error("wrong export column definition", zap.String("def", rcd))
+			utility.DefaultLogger().Error("wrong export column definition", zap.String("def", rcd))
 		}
 		if h.index == 0 && !strings.EqualFold(h.name, "id") {
 			return nil, fmt.Errorf("the first col definition must be {id,int32}")

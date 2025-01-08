@@ -5,17 +5,21 @@ import (
 	"reflect"
 )
 
+func Byte() Codec {
+	return &byteCodec{}
+}
+
 // Codec defines the interface that decode/encode payload.
 type Codec interface {
 	Encode(i interface{}) ([]byte, error)
 	Decode(data []byte, i interface{}) error
 }
 
-// ByteCodec uses raw slice pf bytes and don't encode/decode.
-type ByteCodec struct{}
+// byteCodec uses raw slice pf bytes and don't encode/decode.
+type byteCodec struct{}
 
 // Encode returns raw slice of bytes.
-func (c *ByteCodec) Encode(i interface{}) ([]byte, error) {
+func (c *byteCodec) Encode(i interface{}) ([]byte, error) {
 	if data, ok := i.([]byte); ok {
 		return data, nil
 	}
@@ -27,7 +31,7 @@ func (c *ByteCodec) Encode(i interface{}) ([]byte, error) {
 }
 
 // Decode returns raw slice of bytes.
-func (c *ByteCodec) Decode(data []byte, i interface{}) error {
+func (c *byteCodec) Decode(data []byte, i interface{}) error {
 	reflect.Indirect(reflect.ValueOf(i)).SetBytes(data)
 	return nil
 }

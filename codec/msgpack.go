@@ -5,11 +5,15 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-// MsgpackCodec uses messagepack marshaler and unmarshaler.
-type MsgpackCodec struct{}
+func Msgpack() Codec {
+	return &msgpackCodec{}
+}
+
+// msgpackCodec uses messagepack marshaler and unmarshaler.
+type msgpackCodec struct{}
 
 // Encode encodes an object into slice of bytes.
-func (c *MsgpackCodec) Encode(i interface{}) ([]byte, error) {
+func (c *msgpackCodec) Encode(i interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := msgpack.NewEncoder(&buf)
 	// enc.UseJSONTag(true)
@@ -18,7 +22,7 @@ func (c *MsgpackCodec) Encode(i interface{}) ([]byte, error) {
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *MsgpackCodec) Decode(data []byte, i interface{}) error {
+func (c *msgpackCodec) Decode(data []byte, i interface{}) error {
 	dec := msgpack.NewDecoder(bytes.NewReader(data))
 	// dec.UseJSONTag(true)
 	err := dec.Decode(i)

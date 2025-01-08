@@ -2,7 +2,7 @@ package mr_smart
 
 import (
 	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/log"
+	"github.com/ywengineer/mr.smart/utility"
 	"go.uber.org/zap"
 	"regexp"
 	"testing"
@@ -30,19 +30,19 @@ func (m *TestModule) Name() string {
 }
 
 func (m *TestModule) RegisterAccount1001(channel *SocketChannel, req *Req) {
-	log.GetLogger().Info("RegisterAccount1001 invoked", zap.Any("req", *req))
+	utility.DefaultLogger().Info("RegisterAccount1001 invoked", zap.Any("req", *req))
 }
 
 func (m *TestModule) FindFriend1002(channel *SocketChannel, req *Req) {
-	log.GetLogger().Info("FindFriend1002 invoked", zap.Any("req", *req))
+	utility.DefaultLogger().Info("FindFriend1002 invoked", zap.Any("req", *req))
 }
 
 func (m *TestModule) UseItem1003(channel *SocketChannel, req *Req) {
-	log.GetLogger().Info("UseItem1003 invoked", zap.Any("req", *req))
+	utility.DefaultLogger().Info("UseItem1003 invoked", zap.Any("req", *req))
 }
 
 func (m *TestModule) StartFight1004(channel *SocketChannel, req *Req) *Res {
-	log.GetLogger().Info("StartFight1004 invoked", zap.Any("req", *req))
+	utility.DefaultLogger().Info("StartFight1004 invoked", zap.Any("req", *req))
 	return &Res{
 		Pong: req.Ping,
 	}
@@ -54,7 +54,7 @@ func TestRegisterModule(t *testing.T) {
 		t.Errorf("%v", err)
 		t.FailNow()
 	}
-	jc := &codec.JSONCodec{}
+	jc := codec.Json()
 	channel := &SocketChannel{codec: jc}
 	channel.doRequest(&request{
 		messageCode: 1001,

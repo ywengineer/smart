@@ -6,7 +6,7 @@ import (
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
 	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/log"
+	"github.com/ywengineer/mr.smart/utility"
 	"go.uber.org/zap"
 )
 
@@ -53,7 +53,7 @@ func (h *SocketChannel) send(data []byte) error {
 	writer := h.conn.Writer()
 	defer writer.Flush()
 	if _, err := writer.WriteBinary(data); err != nil {
-		log.GetLogger().Error("write data error", zap.Error(err))
+		utility.DefaultLogger().Error("write data error", zap.Error(err))
 		return err
 	}
 	return nil
@@ -83,16 +83,16 @@ func (h *SocketChannel) onMessageRead() error {
 	reader := h.conn.Reader()
 	// 消息结构(len(4) + code(4) + body(len - 4))
 	if reader.Len() < protocolLengthBytes {
-		log.GetLogger().Info("not enough data")
+		utility.DefaultLogger().Info("not enough data")
 		return errors.New("not enough data")
 	}
 	if data, err := reader.Peek(protocolLengthBytes); err != nil {
-		log.GetLogger().Error("read length failed.", zap.Error(err))
+		utility.DefaultLogger().Error("read length failed.", zap.Error(err))
 		return err
 	} else {
 		pkgSize := int(h.byteOrder.Uint32(data))
 		if reader.Len() < pkgSize+protocolLengthBytes {
-			log.GetLogger().Info("message body is not enough")
+			utility.DefaultLogger().Info("message body is not enough")
 			return errors.New("message body is not enough")
 		} else {
 			_ = reader.Skip(protocolLengthBytes)
@@ -114,14 +114,14 @@ func (h *SocketChannel) doRequest(req *request) {
 	defer releaseRequest(req)
 	hd := hManager.findHandlerDefinition(req.messageCode)
 	if hd == nil {
-		log.GetLogger().Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
+		utility.DefaultLogger().Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
 		return
 	}
 	in := hd.getIn()
 	// decode message
 	if err := h.codec.Decode(req.body, in); err != nil {
 		// decode failed. close channel
-		log.GetLogger().Info("decode message error. suspicious channel, close it.", zap.Error(err))
+		utility.DefaultLogger().Info("decode message error. suspicious channel, close it.", zap.Error(err))
 		_ = h.Close()
 		hd.releaseIn(in)
 		return
@@ -133,6 +133,6 @@ func (h *SocketChannel) doRequest(req *request) {
 	}
 	// send response
 	if err := h.Send(response); err != nil {
-		log.GetLogger().Error("send response error", zap.Error(err))
+		utility.DefaultLogger().Error("send response error", zap.Error(err))
 	}
 }

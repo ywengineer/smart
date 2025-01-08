@@ -5,11 +5,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// PBCodec uses protobuf marshaler and unmarshaler.
-type PBCodec struct{}
+func Protobuf() Codec {
+	return &protoCodec{}
+}
+
+// protoCodec uses protobuf marshaler and unmarshaler.
+type protoCodec struct{}
 
 // Encode encodes an object into slice of bytes.
-func (c *PBCodec) Encode(i interface{}) ([]byte, error) {
+func (c *protoCodec) Encode(i interface{}) ([]byte, error) {
 	if m, ok := i.(proto.Message); ok {
 		return proto.Marshal(m)
 	}
@@ -17,7 +21,7 @@ func (c *PBCodec) Encode(i interface{}) ([]byte, error) {
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *PBCodec) Decode(data []byte, i interface{}) error {
+func (c *protoCodec) Decode(data []byte, i interface{}) error {
 	if m, ok := i.(proto.Message); ok {
 		return proto.Unmarshal(data, m)
 	}

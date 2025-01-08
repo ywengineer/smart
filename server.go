@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/g-util/util"
 	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/log"
 	"github.com/ywengineer/mr.smart/server_config"
+	"github.com/ywengineer/mr.smart/utility"
 	"go.uber.org/zap"
 	"sync"
 	"sync/atomic"
@@ -45,7 +44,7 @@ func NewSmartServer(loader server_config.Loader, initializer []ChannelInitialize
 	if err != nil || conf == nil {
 		return nil, errors.WithMessage(err, "load server server_config error")
 	}
-	worker, _ := NewWorkerManager(util.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
+	worker, _ := NewWorkerManager(utility.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
 	server := &smartServer{
 		status:        prepared,
 		workerManager: worker,
@@ -100,7 +99,7 @@ func (s *smartServer) onConnRead(ctx context.Context, conn netpoll.Connection) e
 	fd := conn.(netpoll.Conn).Fd()
 	// channel not registered
 	if channel, ok := s.channels.Load(fd); ok == false {
-		log.GetLogger().Error("not registered channel.", zap.Int("fd", fd))
+		utility.DefaultLogger().Error("not registered channel.", zap.Int("fd", fd))
 		_ = conn.Close()
 		return fmt.Errorf("channel [%d] not registered", fd)
 	} else { // registered
@@ -125,7 +124,7 @@ func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) c
 	}
 	// check codec, default codec
 	if channel.codec == nil {
-		channel.codec = &codec.ByteCodec{}
+		channel.codec = codec.Byte()
 	}
 	s.channels.Store(channel.fd, channel)
 	atomic.AddInt32(&s.channelCount, 1)
