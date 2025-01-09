@@ -10,11 +10,12 @@ message ForeignMessage {
 }
 
 enum Codec {
-  JSON = 0; // json
-  PROTO = 1; // protocol buffer
-  MSGPACK = 2; // msgpack
-  THRIFT = 3; // thrift
-  FAST_PB = 4; // fastpb
+  SERVER = 0;  // use server codec
+  JSON = 1; // json
+  PROTO = 2; // protocol buffer
+  MSGPACK = 3; // msgpack
+  THRIFT = 4; // thrift
+  FAST_PB = 5; // fastpb
 }
 
 message ProtocolMessage {
