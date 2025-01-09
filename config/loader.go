@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/bytedance/sonic"
-	"github.com/ywengineer/mr.smart/utility"
+	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"reflect"
 	"strings"

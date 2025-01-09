@@ -1,8 +1,8 @@
-package mr_smart
+package smart
 
 import (
-	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/message"
+	"github.com/ywengineer/smart/codec"
+	"github.com/ywengineer/smart/message"
 	"sync"
 	"testing"
 )

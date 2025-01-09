@@ -1,10 +1,10 @@
-package mr_smart
+package smart
 
 import (
 	"context"
-	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/message"
-	"github.com/ywengineer/mr.smart/utility"
+	"github.com/ywengineer/smart/codec"
+	"github.com/ywengineer/smart/message"
+	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"reflect"
@@ -12,7 +12,7 @@ import (
 )
 
 var hManager = &handlerManager{
-	_handlerMap: make(map[int]*handlerDefinition, 1000),
+	_handlerMap: make(map[int32]*handlerDefinition, 1000),
 }
 
 // handler structure
@@ -57,18 +57,24 @@ type handlerManager struct {
 func (hm *handlerManager) invokeHandler(ctx context.Context, c *SocketChannel, req *message.ProtocolMessage) {
 	hd := hm.findHandlerDefinition(req.GetRoute())
 	if hd == nil {
-		utility.DefaultLogger().Info("handler definition not found for message code", zap.Int32("msgCode", req.GetRoute()))
+		utility.DefaultLogger().Warn("handler definition not found for message code", zap.Int32("msgCode", req.GetRoute()))
+		return
+	}
+	// find codec
+	_codec := findMessageCodec(c, req.Codec)
+	if _codec == nil {
+		_ = c.Close()
 		return
 	}
 	in := hd.getIn()
 	// decode message
-	if err := c.codec.Decode(req.body, in); err != nil {
+	if err := _codec.Decode(req.Payload, in); err != nil {
 		// decode failed. close channel
-		utility.DefaultLogger().Info("decode message error. suspicious channel, close it.", zap.Error(err))
+		utility.DefaultLogger().Error("decode message error. suspicious channel, close it.", zap.Error(err))
 		_ = c.Close()
 		hd.releaseIn(in)
 	} else if response := hd.invoke(c, in); response != nil {
-		if err := c.Send(response); err != nil { // send response
+		if err = c.Send(response); err != nil { // send response
 			utility.DefaultLogger().Error("send response error", zap.Error(err))
 		}
 	} else { // oneway message
@@ -100,7 +106,7 @@ func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
 	}
 }
 
-func findMessageCodec(mc message.Codec) codec.Codec {
+func findMessageCodec(sc *SocketChannel, mc message.Codec) codec.Codec {
 	switch mc {
 	case message.Codec_JSON:
 		return codec.Json()
@@ -113,6 +119,7 @@ func findMessageCodec(mc message.Codec) codec.Codec {
 		return nil
 	case message.Codec_FAST_PB:
 		return codec.Fastpb()
+	default:
+		return sc.codec
 	}
-	return codec.Protobuf()
 }

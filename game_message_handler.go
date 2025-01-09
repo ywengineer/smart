@@ -1,8 +1,8 @@
-package mr_smart
+package smart
 
 import (
 	"context"
-	"github.com/ywengineer/mr.smart/message"
+	"github.com/ywengineer/smart/message"
 )
 
 func NewGameMessageHandler() ChannelHandler {

@@ -1,10 +1,10 @@
-package mr_smart
+package smart
 
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/mr.smart/message"
-	"github.com/ywengineer/mr.smart/utility"
+	"github.com/ywengineer/smart/message"
+	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"reflect"
 	"strconv"

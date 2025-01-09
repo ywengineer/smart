@@ -1,4 +1,4 @@
-module github.com/ywengineer/mr.smart
+module github.com/ywengineer/smart
 
 go 1.22
 

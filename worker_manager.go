@@ -1,10 +1,10 @@
-package mr_smart
+package smart
 
 import (
 	"context"
 	"fmt"
 	"github.com/bytedance/gopkg/util/gopool"
-	"github.com/ywengineer/mr.smart/utility"
+	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 )
 

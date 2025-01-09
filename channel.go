@@ -1,13 +1,13 @@
-package mr_smart
+package smart
 
 import (
 	"context"
 	"encoding/binary"
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/message"
-	"github.com/ywengineer/mr.smart/utility"
+	"github.com/ywengineer/smart/codec"
+	"github.com/ywengineer/smart/message"
+	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )

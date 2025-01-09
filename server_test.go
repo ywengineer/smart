@@ -1,13 +1,13 @@
-package mr_smart
+package smart
 
 import (
 	"context"
 	"encoding/binary"
 	"github.com/cloudwego/netpoll"
 	"github.com/stretchr/testify/assert"
-	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/server_config"
-	"github.com/ywengineer/mr.smart/utility"
+	"github.com/ywengineer/smart/codec"
+	"github.com/ywengineer/smart/server_config"
+	"github.com/ywengineer/smart/utility"
 	"testing"
 	"time"
 )
@@ -19,7 +19,7 @@ func TestServer(t *testing.T) {
 	network, addr := "tcp", "127.0.0.1:12345"
 	srv, err := NewSmartServer(&server_config.ValueLoader{
 		Conf: &server_config.Conf{Network: network, Address: addr, Workers: 1, WorkerLoadBalance: "rr"},
-	}, []ChannelInitializer{
+	},
 		WithByteOrder(func() binary.ByteOrder {
 			return binary.LittleEndian
 		}),
@@ -27,7 +27,7 @@ func TestServer(t *testing.T) {
 			return codec.Json()
 		}),
 		AppendHandler(func() ChannelHandler { return NewGameMessageHandler() }),
-	})
+	)
 	// register game logic module
 	err = RegisterModule(&TestModule{})
 	if err != nil {

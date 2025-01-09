@@ -1,4 +1,4 @@
-package mr_smart
+package smart
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/server_config"
-	"github.com/ywengineer/mr.smart/utility"
+	"github.com/ywengineer/smart/codec"
+	"github.com/ywengineer/smart/server_config"
+	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"net"
 	"runtime"
@@ -37,7 +37,7 @@ type smartServer struct {
 	conf          *server_config.Conf
 }
 
-func NewSmartServer(loader server_config.Loader, initializer []ChannelInitializer) (*smartServer, error) {
+func NewSmartServer(loader server_config.Loader, initializer ...ChannelInitializer) (*smartServer, error) {
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}
@@ -128,10 +128,12 @@ func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) c
 	// check byte order
 	if channel.byteOrder == nil {
 		channel.byteOrder = binary.LittleEndian
+		utility.DefaultLogger().Warn("byteOrder not set, default is LittleEndian")
 	}
 	// check codec, default codec
 	if channel.codec == nil {
 		channel.codec = codec.Byte()
+		utility.DefaultLogger().Warn("codec not set, default is byte")
 	}
 	s.channels.Store(channel.fd, channel)
 	atomic.AddInt32(&s.channelCount, 1)

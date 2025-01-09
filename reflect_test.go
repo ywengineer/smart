@@ -1,4 +1,4 @@
-package mr_smart
+package smart
 
 import (
 	"reflect"

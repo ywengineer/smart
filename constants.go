@@ -1,4 +1,4 @@
-package mr_smart
+package smart
 
 import (
 	"reflect"
@@ -6,6 +6,8 @@ import (
 )
 
 const handlerRegexp = "^\\D+([1-9][0-9]*)$"
+const FROM = "from"
+const TO = "to"
 
 var TypeSocketChannel = reflect.TypeOf(&SocketChannel{})
 var handlerSignatureRegexp = regexp.MustCompile(handlerRegexp)

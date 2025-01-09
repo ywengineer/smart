@@ -1,10 +1,10 @@
-package mr_smart
+package smart
 
 import (
 	"context"
 	"encoding/binary"
-	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/message"
+	"github.com/ywengineer/smart/codec"
+	"github.com/ywengineer/smart/message"
 )
 
 type ChannelHandler interface {

@@ -1,8 +1,7 @@
-package mr_smart
+package smart
 
 import (
-	"github.com/ywengineer/mr.smart/codec"
-	"github.com/ywengineer/mr.smart/utility"
+	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"regexp"
 	"testing"
@@ -54,24 +53,6 @@ func TestRegisterModule(t *testing.T) {
 		t.Errorf("%v", err)
 		t.FailNow()
 	}
-	jc := codec.Json()
-	channel := &SocketChannel{codec: jc}
-	channel.doRequest(&request{
-		messageCode: 1001,
-		body:        []byte(`{"ping": 1001, "extra": "1001"}`),
-	})
-	channel.doRequest(&request{
-		messageCode: 1002,
-		body:        []byte(`{"ping": 1002}`),
-	})
-	channel.doRequest(&request{
-		messageCode: 1003,
-		body:        []byte(`{"ping": 1003, "extra": "1003"}`),
-	})
-	channel.doRequest(&request{
-		messageCode: 1004,
-		body:        []byte(`{"ping": 1004}`),
-	})
 }
 
 func TestRegex(t *testing.T) {

@@ -1,8 +1,8 @@
-package mr_smart
+package smart
 
 import (
 	"github.com/bytedance/gopkg/lang/fastrand"
-	"github.com/ywengineer/mr.smart/utility"
+	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"sync/atomic"
 )
