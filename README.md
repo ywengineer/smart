@@ -17,7 +17,8 @@
 其中：
 
 - LENGTH 字段 32bits，BODY 部分的字节大小
-- HEADER MAGIC 字段 16bits，值为：0x0000，用于标识 协议(SmartProtocol)
+- HEADER MAGIC 字段 16bits，值为：0x0000，用于标识 协议
+     - SmartProtocol = 0x0000
 - FLAGS 字段 8bits，为预留字段，暂未使用，默认值为 0x0000
 - BODy 消息内容, message.ProtocolMessage 的字节数组
 - COMPRESS 字段 8bits，BODY 压缩算法，暂未实现，默认值为 0x0000

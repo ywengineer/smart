@@ -51,6 +51,18 @@ func (h *SocketChannel) send(data []byte) error {
 	}
 	writer := h.conn.Writer()
 	defer writer.Flush()
+	// 消息结构(len(4) + protocol(2) + compress(1) + flags(1) + payload(len))
+	if _, err := writer.WriteBinary(utility.Int32ToBytes(h.byteOrder, int32(len(data)))); err != nil {
+		utility.DefaultLogger().Error("write data len error", zap.Error(err))
+		return err
+	}
+	if _, err := writer.WriteBinary(utility.Int16ToBytes(h.byteOrder, int16(message.Smart))); err != nil {
+		utility.DefaultLogger().Error("write protocol id error", zap.Error(err))
+		return err
+	}
+	_ = writer.WriteByte(0)
+	_ = writer.WriteByte(0)
+	//
 	if _, err := writer.WriteBinary(data); err != nil {
 		utility.DefaultLogger().Error("write data error", zap.Error(err))
 		return err
