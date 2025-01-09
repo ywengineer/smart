@@ -5,7 +5,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var pc = &protoCodec{}
+
 func Protobuf() Codec {
+	return pc
+}
+
+func NewProtobufCodec() Codec {
 	return &protoCodec{}
 }
 

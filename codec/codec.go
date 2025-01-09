@@ -5,7 +5,13 @@ import (
 	"reflect"
 )
 
+var b = &byteCodec{}
+
 func Byte() Codec {
+	return b
+}
+
+func NewByteCodec() Codec {
 	return &byteCodec{}
 }
 

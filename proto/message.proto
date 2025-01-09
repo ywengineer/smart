@@ -18,7 +18,8 @@ enum Codec {
 
 message ProtocolMessage {
   int32 seq = 1; // SEQUENCE NUMBER 字段 32bits，表示数据包的 seqId，可用于多路复用，最好确保单个连接内递增
-  map<string, string> header = 2; // 请求头
-  Codec codec = 3; // 编码类型
-  bytes payload = 4; // 消息内容
+  int32 route = 2; // int32 消息路由ID
+  map<string, string> header = 3; // 请求头
+  Codec codec = 4; // 编码类型
+  bytes payload = 5; // 消息内容
 }

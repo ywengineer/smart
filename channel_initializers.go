@@ -10,6 +10,7 @@ import (
 type ChannelHandler interface {
 	OnOpen(channel *SocketChannel)
 	OnClose(channel *SocketChannel)
+	// OnMessage skip execute next handler when return error
 	OnMessage(ctx context.Context, channel *SocketChannel, msg *message.ProtocolMessage) error
 }
 

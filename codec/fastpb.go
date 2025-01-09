@@ -5,7 +5,13 @@ import (
 	"github.com/cloudwego/fastpb"
 )
 
+var fpbc = &fastpbCodec{}
+
 func Fastpb() Codec {
+	return fpbc
+}
+
+func NewFastpbCodec() Codec {
 	return &fastpbCodec{}
 }
 

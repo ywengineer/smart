@@ -5,7 +5,13 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+var msgpackc = &msgpackCodec{}
+
 func Msgpack() Codec {
+	return msgpackc
+}
+
+func NewMsgpackCodec() Codec {
 	return &msgpackCodec{}
 }
 

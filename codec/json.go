@@ -5,7 +5,13 @@ import (
 	"github.com/bytedance/sonic/decoder"
 )
 
+var jsonc = &jsonCodec{}
+
 func Json() Codec {
+	return jsonc
+}
+
+func NewJsonCodec() Codec {
 	return &jsonCodec{}
 }
 

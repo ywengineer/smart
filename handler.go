@@ -53,8 +53,8 @@ type handlerManager struct {
 	_handlerMap map[int]*handlerDefinition
 }
 
-func (hm *handlerManager) invokeHandler(ctx context.Context, c *SocketChannel, req *request) {
-	hd := hm.findHandlerDefinition(req.messageCode)
+func (hm *handlerManager) invokeHandler(ctx context.Context, c *SocketChannel, req *message.ProtocolMessage) {
+	hd := hm.findHandlerDefinition(req.GetCodec())
 	if hd == nil {
 		utility.DefaultLogger().Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
 		return
