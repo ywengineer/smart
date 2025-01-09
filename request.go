@@ -1,23 +1,21 @@
 package mr_smart
 
-import "sync"
-
-type request struct {
-	messageCode int
-	body        []byte
-}
+import (
+	"github.com/ywengineer/mr.smart/message"
+	"sync"
+)
 
 var requestPool = &sync.Pool{
 	New: func() interface{} {
-		return &request{}
+		return &message.ProtocolMessage{}
 	},
 }
 
-func getRequest() *request {
-	return requestPool.Get().(*request)
+func getRequest() *message.ProtocolMessage {
+	return requestPool.Get().(*message.ProtocolMessage)
 }
 
-func releaseRequest(req *request) {
-	req.body = nil
+func releaseRequest(req *message.ProtocolMessage) {
+	req.Reset()
 	requestPool.Put(req)
 }

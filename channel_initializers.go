@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/binary"
 	"github.com/ywengineer/mr.smart/codec"
+	"github.com/ywengineer/mr.smart/message"
 )
 
 type ChannelHandler interface {
 	OnOpen(channel *SocketChannel)
 	OnClose(channel *SocketChannel)
-	OnMessage(ctx context.Context, channel *SocketChannel) error
+	OnMessage(ctx context.Context, channel *SocketChannel, msg *message.ProtocolMessage) error
 }
 
 type ChannelInitializer func(channel *SocketChannel)
