@@ -58,6 +58,11 @@ func (h *SocketChannel) send(data []byte) error {
 	return nil
 }
 
+// GetFd returns id of channel
+func (h *SocketChannel) GetFd() int {
+	return h.fd
+}
+
 func (h *SocketChannel) onOpen() {
 	h.LaterRun(func() {
 		if len(h.handlers) > 0 {

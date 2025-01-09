@@ -14,6 +14,7 @@ enum Codec {
   PROTO = 1; // protocol buffer
   MSGPACK = 2; // msgpack
   THRIFT = 3; // thrift
+  FAST_PB = 4; // fastpb
 }
 
 message ProtocolMessage {

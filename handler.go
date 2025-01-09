@@ -2,6 +2,7 @@ package mr_smart
 
 import (
 	"context"
+	"github.com/ywengineer/mr.smart/codec"
 	"github.com/ywengineer/mr.smart/message"
 	"github.com/ywengineer/mr.smart/utility"
 	"go.uber.org/zap"
@@ -50,13 +51,13 @@ func (hd *handlerDefinition) getIn() interface{} {
 
 type handlerManager struct {
 	// can not use directly
-	_handlerMap map[int]*handlerDefinition
+	_handlerMap map[int32]*handlerDefinition
 }
 
 func (hm *handlerManager) invokeHandler(ctx context.Context, c *SocketChannel, req *message.ProtocolMessage) {
-	hd := hm.findHandlerDefinition(req.GetCodec())
+	hd := hm.findHandlerDefinition(req.GetRoute())
 	if hd == nil {
-		utility.DefaultLogger().Info("handler definition not found for message code", zap.Int("msgCode", req.messageCode))
+		utility.DefaultLogger().Info("handler definition not found for message code", zap.Int32("msgCode", req.GetRoute()))
 		return
 	}
 	in := hd.getIn()
@@ -75,12 +76,12 @@ func (hm *handlerManager) invokeHandler(ctx context.Context, c *SocketChannel, r
 	}
 }
 
-func (hm *handlerManager) findHandlerDefinition(msgCode int) *handlerDefinition {
+func (hm *handlerManager) findHandlerDefinition(msgCode int32) *handlerDefinition {
 	return hm._handlerMap[msgCode]
 }
 
 func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
-	if _, ok := hm._handlerMap[def.messageCode]; ok {
+	if _, ok := hm._handlerMap[int32(def.messageCode)]; ok {
 		utility.DefaultLogger().Warn("handler already exists", zap.Int("msgCode", def.messageCode))
 	} else {
 		utility.DefaultLogger().Debug("register a new method handler", zap.Int("msgCode", def.messageCode))
@@ -95,6 +96,23 @@ func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
 				}
 			}(def),
 		}
-		hm._handlerMap[def.messageCode] = def
+		hm._handlerMap[int32(def.messageCode)] = def
 	}
+}
+
+func findMessageCodec(mc message.Codec) codec.Codec {
+	switch mc {
+	case message.Codec_JSON:
+		return codec.Json()
+	case message.Codec_PROTO:
+		return codec.Protobuf()
+	case message.Codec_MSGPACK:
+		return codec.Msgpack()
+	case message.Codec_THRIFT:
+		utility.DefaultLogger().Warn("unsupported message codec: THRIFT")
+		return nil
+	case message.Codec_FAST_PB:
+		return codec.Fastpb()
+	}
+	return codec.Protobuf()
 }
