@@ -26,8 +26,8 @@ type handlerDefinition struct {
 	inPool      *sync.Pool
 }
 
-func (hd *handlerDefinition) invoke(channel *SocketChannel, in interface{}) interface{} {
-	out := hd.method.Call([]reflect.Value{reflect.ValueOf(channel), reflect.ValueOf(in)})
+func (hd *handlerDefinition) invoke(ctx context.Context, channel *SocketChannel, in interface{}) interface{} {
+	out := hd.method.Call([]reflect.Value{reflect.ValueOf(ctx), reflect.ValueOf(channel), reflect.ValueOf(in)})
 	if len(out) == 0 {
 		return nil
 	}
@@ -71,7 +71,7 @@ func (hm *handlerManager) invokeHandler(ctx context.Context, c *SocketChannel, r
 		// decode failed. close channel
 		utility.DefaultLogger().Error("decode message error. suspicious channel, close it.", zap.Error(err))
 		_ = c.Close()
-	} else if response := hd.invoke(c, in); response != nil {
+	} else if response := hd.invoke(ctx, c, in); response != nil {
 		if err = c.Send(response); err != nil { // send response
 			utility.DefaultLogger().Error("send response error", zap.Error(err))
 		}

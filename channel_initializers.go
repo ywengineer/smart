@@ -10,6 +10,9 @@ import (
 type ChannelHandler interface {
 	OnOpen(channel *SocketChannel)
 	OnClose(channel *SocketChannel)
+}
+
+type MessageHandler interface {
 	// OnMessage skip execute next handler when return error
 	OnMessage(ctx context.Context, channel *SocketChannel, msg *message.ProtocolMessage) error
 }
@@ -31,6 +34,12 @@ func WithByteOrder(f func() binary.ByteOrder) ChannelInitializer {
 func AppendHandler(f func() ChannelHandler) ChannelInitializer {
 	return func(channel *SocketChannel) {
 		channel.handlers = append(channel.handlers, f())
+	}
+}
+
+func AppendMessageHandler(f func() MessageHandler) ChannelInitializer {
+	return func(channel *SocketChannel) {
+		channel.msgHandlers = append(channel.msgHandlers, f())
 	}
 }
 

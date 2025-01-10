@@ -5,19 +5,11 @@ import (
 	"github.com/ywengineer/smart/message"
 )
 
-func NewGameMessageHandler() ChannelHandler {
+func NewGameMessageHandler() MessageHandler {
 	return &gameMessageHandler{}
 }
 
 type gameMessageHandler struct {
-}
-
-func (gsh *gameMessageHandler) OnOpen(channel *SocketChannel) {
-
-}
-
-func (gsh *gameMessageHandler) OnClose(channel *SocketChannel) {
-
 }
 
 func (gsh *gameMessageHandler) OnMessage(ctx context.Context, h *SocketChannel, m *message.ProtocolMessage) error {

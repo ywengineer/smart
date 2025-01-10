@@ -32,14 +32,18 @@ func RegisterModule(module SmartModule) error {
 			utility.DefaultLogger().Debug("not a request handler", zap.String("method", mName), zap.String("regexp", handlerRegexp))
 			continue
 		}
-		if mSignature.NumIn() != 2 {
+		if mSignature.NumIn() != 3 {
 			return createMethodSignatureError(mName)
 		}
-		// *SocketChannel
+		// context.Context
 		in0 := mSignature.In(0)
-		// error
+		// *SocketChannel
 		in1 := mSignature.In(1)
-		if in0.Kind() != reflect.Ptr || in0 != TypeSocketChannel || in1.Kind() != reflect.Ptr {
+		// error
+		in2 := mSignature.In(2)
+		if in0.Kind() != reflect.Interface || in0 != TypeContext ||
+			in1.Kind() != reflect.Ptr || in1 != TypeSocketChannel ||
+			in2.Kind() != reflect.Ptr {
 			return createMethodSignatureError(mName)
 		}
 		// 1st out must be ptr if num out greater than 0
@@ -55,7 +59,7 @@ func RegisterModule(module SmartModule) error {
 			hManager.addHandlerDefinition(&handlerDefinition{
 				messageCode: code,
 				name:        mName,
-				inType:      in1,
+				inType:      in2,
 				method:      method,
 			})
 		}
@@ -64,5 +68,5 @@ func RegisterModule(module SmartModule) error {
 }
 
 func createMethodSignatureError(mName string) error {
-	return fmt.Errorf("handler[%s] signature must be %s(*SocketChannel, *Any) [*ResponseType]", handlerRegexp, mName)
+	return fmt.Errorf("handler signature must be %s(context.Context, *SocketChannel, *Any) [*ResponseType]", mName)
 }

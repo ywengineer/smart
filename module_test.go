@@ -1,6 +1,8 @@
 package smart
 
 import (
+	"context"
+	"github.com/ywengineer/smart/message"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"regexp"
@@ -28,23 +30,31 @@ func (m *TestModule) Name() string {
 	return "TestModule"
 }
 
-func (m *TestModule) RegisterAccount1001(channel *SocketChannel, req *Req) {
+func (m *TestModule) RegisterAccount1001(ctx context.Context, channel *SocketChannel, req *Req) {
 	utility.DefaultLogger().Info("RegisterAccount1001 invoked", zap.Any("req", *req))
 }
 
-func (m *TestModule) FindFriend1002(channel *SocketChannel, req *Req) {
+func (m *TestModule) FindFriend1002(ctx context.Context, channel *SocketChannel, req *Req) {
 	utility.DefaultLogger().Info("FindFriend1002 invoked", zap.Any("req", *req))
 }
 
-func (m *TestModule) UseItem1003(channel *SocketChannel, req *Req) {
+func (m *TestModule) UseItem1003(ctx context.Context, channel *SocketChannel, req *Req) {
 	utility.DefaultLogger().Info("UseItem1003 invoked", zap.Any("req", *req))
 }
 
-func (m *TestModule) StartFight1004(channel *SocketChannel, req *Req) *Res {
+func (m *TestModule) StartFight1004(ctx context.Context, channel *SocketChannel, req *Req) *message.ProtocolMessage {
 	utility.DefaultLogger().Info("StartFight1004 invoked", zap.Any("req", *req))
-	return &Res{
-		Pong: req.Ping,
+	return &message.ProtocolMessage{
+		Seq:     1,
+		Route:   1005,
+		Header:  map[string]string{},
+		Codec:   message.Codec_JSON,
+		Payload: []byte(`{"ping":1005, "extra": "from server"}`),
 	}
+}
+
+func (m *TestModule) StartFightRes1005(ctx context.Context, channel *SocketChannel, req *Req) {
+	utility.DefaultLogger().Info("StartFightRes1005 invoked", zap.Any("req", *req))
 }
 
 func TestRegisterModule(t *testing.T) {

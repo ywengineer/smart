@@ -3,23 +3,24 @@ package smart
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"github.com/cloudwego/netpoll"
-	"github.com/pkg/errors"
 	"github.com/ywengineer/smart/codec"
 	"github.com/ywengineer/smart/message"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
+	"sync"
 )
 
 type SocketChannel struct {
-	ctx       context.Context
-	fd        int
-	conn      netpoll.Connection
-	codec     codec.Codec
-	byteOrder binary.ByteOrder
-	worker    Worker
-	handlers  []ChannelHandler
+	ctx         context.Context
+	fd          int
+	conn        netpoll.Connection
+	codec       codec.Codec
+	byteOrder   binary.ByteOrder
+	worker      Worker
+	handlers    []ChannelHandler
+	msgHandlers []MessageHandler
 }
 
 // Send all data and event callback run in worker related SocketChannel
@@ -64,83 +65,59 @@ func (h *SocketChannel) GetFd() int {
 }
 
 func (h *SocketChannel) onOpen() {
-	h.LaterRun(func() {
-		if len(h.handlers) > 0 {
+	if len(h.handlers) > 0 {
+		h.LaterRun(func() {
 			for _, handler := range h.handlers {
 				handler.OnOpen(h)
 			}
-		}
-	})
+		})
+	}
 }
 
 func (h *SocketChannel) onClose() {
-	h.LaterRun(func() {
-		if len(h.handlers) > 0 {
+	if len(h.handlers) > 0 {
+		h.LaterRun(func() {
 			for _, handler := range h.handlers {
 				handler.OnClose(h)
 			}
-		}
-	})
+		})
+	}
 }
 
 func (h *SocketChannel) onMessageRead(ctx context.Context) error {
-
-	reader := h.conn.Reader()
-	// 消息结构(len(4) + protocol(2) + compress(1) + flags(1) + payload(len))
-	if reader.Len() < message.ProtocolMetaBytes {
-		// data is not enough, wait next
-		return nil
-	}
-	if data, err := reader.Peek(message.ProtocolMetaBytes); err != nil {
-		// read data error
-		utility.DefaultLogger().Error("read msg meta failed.", zap.Error(err))
+	msg := protocolMessagePool.Get()
+	err := h.codec.Decode(h.conn.Reader(), msg)
+	// parameter type not match *message.ProtocolMessage
+	// or pkg is too big
+	if errors.Is(err, codec.ErrParamMessage) || errors.Is(err, codec.ErrTooBig) {
+		_ = h.Close()
 		return err
-	} else {
-		pkgSize := int(h.byteOrder.Uint32(data[:4]))
-		// TODO
-		//_ = int(h.byteOrder.Uint32(data[4:6])) // protocol
-		//_ = int(h.byteOrder.Uint32(data[6:7])) // compress
-		//_ = int(h.byteOrder.Uint32(data[7:8])) // flags
-		// pkg size reach max size, close it
-		if pkgSize >= 65535 {
-			utility.DefaultLogger().Error("msg is too big. connection will be close", zap.Int("size", pkgSize))
-			return h.Close()
-		}
-		//
-		if reader.Len() < pkgSize+message.ProtocolMetaBytes {
-			// game msg body is not enough. wait
-			return nil
-		} else {
-			err = reader.Skip(message.ProtocolMetaBytes)
-			if err != nil {
-				utility.DefaultLogger().Error("failed to skip meta size.", zap.Error(err))
-				return err
-			}
-			pkg, err := reader.ReadBinary(pkgSize)
-			if err != nil {
-				utility.DefaultLogger().Error("failed to read protocol bytes.", zap.Error(err))
-				return err
-			}
-			req := getRequest()
-			if err = proto.Unmarshal(pkg, req); err != nil {
-				utility.DefaultLogger().Error("failed to decode bytes to ProtocolMessage.", zap.Error(err))
-				releaseRequest(req)
-				return err
-			}
-			h.LaterRun(func(req *message.ProtocolMessage) func() {
-				return func() {
-					defer releaseRequest(req)
+	} else if errors.Is(err, codec.ErrPkgNotFull) { // pkg not full, skip
+		return nil
+	} else { // decode success
+		h.LaterRun(func(msg *message.ProtocolMessage) func() {
+			return func() {
+				defer protocolMessagePool.Put(msg)
+				//
+				if len(h.msgHandlers) > 0 {
 					//
-					if len(h.handlers) > 0 {
-						for _, handler := range h.handlers {
-							if err := handler.OnMessage(ctx, h, req); err != nil {
-								break
-							}
+					ctx = context.WithValue(ctx, CtxKeySeq, msg.GetSeq())
+					ctx = context.WithValue(ctx, CtxKeyHeader, msg.GetHeader())
+					//
+					for _, handler := range h.msgHandlers {
+						if err := handler.OnMessage(ctx, h, msg); err != nil {
+							break
 						}
 					}
 				}
-			}(req))
-		}
+			}
+		}(msg.(*message.ProtocolMessage)))
 	} //
 	return nil
+}
+
+var protocolMessagePool = &sync.Pool{
+	New: func() interface{} {
+		return &message.ProtocolMessage{}
+	},
 }

@@ -14,6 +14,7 @@ func TestPBCodec(t *testing.T) {
 			return &message.ForeignMessage{}
 		},
 	}
+
 	json := codec.Protobuf()
 	data, _ := json.Encode(&message.ForeignMessage{C: 1, D: 2})
 
@@ -38,7 +39,7 @@ func TestJSONCodec(t *testing.T) {
 			return &Req{}
 		},
 	}
-	json := codec.Protobuf()
+	json := codec.Json()
 
 	req, buf := p.Get().(*Req), utility.NewLinkBuffer([]byte(`{"ping": 1, "extra": "abc"}`))
 	_ = json.Decode(buf, req)

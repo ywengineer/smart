@@ -27,7 +27,7 @@ func TestServer(t *testing.T) {
 		WithCodec(func() codec.Codec {
 			return codec.NewSmartCodec(binary.LittleEndian)
 		}),
-		AppendHandler(func() ChannelHandler { return NewGameMessageHandler() }),
+		AppendMessageHandler(func() MessageHandler { return NewGameMessageHandler() }),
 	)
 	// register game logic module
 	err = RegisterModule(&TestModule{})
@@ -42,6 +42,8 @@ func TestServer(t *testing.T) {
 	t.Log("smart server was started.")
 	//
 	dialer := netpoll.NewDialer()
+	//
+	var channel *SocketChannel
 	go func() {
 		time.Sleep(5 * time.Second)
 		conn, err := dialer.DialConnection(network, addr, time.Second)
@@ -49,50 +51,65 @@ func TestServer(t *testing.T) {
 			t.Errorf("dial failed. %v", err)
 		}
 		//
-		channel := &SocketChannel{
+		channel = &SocketChannel{
 			ctx:    context.Background(),
 			fd:     conn.(netpoll.Conn).Fd(),
 			conn:   conn,
 			worker: srv.workerManager.Pick(conn.(netpoll.Conn).Fd()),
 		}
 		//conn.AddCloseCallback(channel.onClose)
+		_ = conn.SetOnRequest(func(ctx context.Context, connection netpoll.Connection) error {
+			return channel.onMessageRead(ctx)
+		})
 		for _, initializer := range srv.initializers {
 			initializer(channel)
 		}
 		channel.onOpen()
-		defer channel.Close()
 		//
 		if err = channel.Send(&message.ProtocolMessage{
 			Seq:     1,
 			Route:   1001,
 			Header:  map[string]string{},
 			Codec:   message.Codec_JSON,
-			Payload: []byte(`{"key":"1001"}`),
+			Payload: []byte(`{"ping":1001, "extra": "from client"}`),
 		}); err != nil {
 			t.Errorf("send 1001 failed. %v", err)
 		}
 		//
 		if err = channel.Send(&message.ProtocolMessage{
 			Seq:     2,
-			Route:   1001,
+			Route:   1002,
 			Header:  map[string]string{},
 			Codec:   message.Codec_JSON,
-			Payload: []byte(`{"key":"1002"}`),
+			Payload: []byte(`{"ping":1002, "extra": "from client"}`),
 		}); err != nil {
 			t.Errorf("send 1002 failed. %v", err)
 		}
 		//
 		if err = channel.Send(&message.ProtocolMessage{
 			Seq:     3,
-			Route:   1001,
+			Route:   1003,
 			Header:  map[string]string{},
 			Codec:   message.Codec_JSON,
-			Payload: []byte(`{"key":"1003"}`),
+			Payload: []byte(`{"ping":1003, "extra": "from client"}`),
 		}); err != nil {
 			t.Errorf("send 1003 failed. %v", err)
 		}
+		//
+		if err = channel.Send(&message.ProtocolMessage{
+			Seq:     4,
+			Route:   1004,
+			Header:  map[string]string{},
+			Codec:   message.Codec_JSON,
+			Payload: []byte(`{"ping":1004, "extra": "from client"}`),
+		}); err != nil {
+			t.Errorf("send 1004 failed. %v", err)
+		}
 	}()
 	_ = <-utility.WatchQuitSignal()
+	if channel != nil {
+		t.Logf("close channel: %v", channel.Close())
+	}
 	// 5. wait smart server shutdown
 	t.Logf("smart server was stopped. %v", srv.Shutdown())
 }

@@ -30,5 +30,6 @@ func BytesToInt64(odr binary.ByteOrder, buf []byte) int64 {
 func NewLinkBuffer(data []byte) *netpoll.LinkBuffer {
 	lb := netpoll.NewLinkBuffer(len(data))
 	_, _ = lb.WriteBinary(data)
+	_ = lb.Flush()
 	return lb
 }

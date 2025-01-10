@@ -6,22 +6,18 @@ import (
 	"strconv"
 )
 
-type GateMessageHandler struct {
+func NewGateMessageHandler() MessageHandler {
+	return &gateMessageHandler{}
 }
 
-func (gsh *GateMessageHandler) OnOpen(channel *SocketChannel) {
-
+type gateMessageHandler struct {
 }
 
-func (gsh *GateMessageHandler) OnClose(channel *SocketChannel) {
-
-}
-
-func (gsh *GateMessageHandler) OnMessage(ctx context.Context, h *SocketChannel, m *message.ProtocolMessage) error {
+func (gsh *gateMessageHandler) OnMessage(ctx context.Context, h *SocketChannel, m *message.ProtocolMessage) error {
 	if m.Header == nil {
 		m.Header = map[string]string{}
 	}
-	m.Header[FROM] = strconv.Itoa(h.GetFd())
+	m.Header[HeaderFrom] = strconv.Itoa(h.GetFd())
 	// load balance redirect to
 	//bytes, _ := proto.Marshal(m)
 	//

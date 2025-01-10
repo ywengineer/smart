@@ -13,9 +13,14 @@ import (
 
 var littleSmartCodec = NewSmartCodec(binary.LittleEndian)
 var bigSmartCodec = NewSmartCodec(binary.BigEndian)
-var ErrorTooBig = errors.New("msg too big")
-var ErrorPkgNotFull = errors.New("pkg not full")
-var ErrorParamMessage = errors.New("parameter is not a type [*message.ProtocolMessage]")
+
+// const errors
+var (
+	ErrTooBig       = errors.New("msg too big")
+	ErrPkgNotFull   = errors.New("pkg not full")
+	ErrParamMessage = errors.New("parameter is not a type [*message.ProtocolMessage]")
+	ErrProtoParam   = errors.New("parameter is not a type [proto.Message]")
+)
 
 var smartMessagePool = &sync.Pool{
 	New: func() interface{} {
@@ -52,7 +57,7 @@ type smartCodec struct {
 
 // Encode encodes an object into slice of bytes.
 func (c *smartCodec) Encode(i interface{}) ([]byte, error) {
-	if req, ok := i.(*message.ProtocolMessage); !ok {
+	if req, ok := i.(proto.Message); ok {
 		bytes, _ := proto.Marshal(req)
 		buffer := netpoll.NewLinkBuffer(message.ProtocolMetaBytes + len(bytes))
 		defer buffer.Release()
@@ -61,9 +66,10 @@ func (c *smartCodec) Encode(i interface{}) ([]byte, error) {
 		_ = buffer.WriteByte(0)                                                   // compress
 		_ = buffer.WriteByte(0)                                                   // flags
 		_, _ = buffer.WriteBinary(bytes)
-		return buffer.Bytes(), nil
+		err := buffer.Flush()
+		return buffer.Bytes(), err
 	}
-	return nil, ErrorParamMessage
+	return nil, ErrProtoParam
 }
 
 // Decode decodes an object from slice of bytes.
@@ -72,7 +78,7 @@ func (c *smartCodec) Decode(reader netpoll.Reader, i interface{}) error {
 	// 消息结构(len(4) + protocol(2) + compress(1) + flags(1) + payload(len))
 	if dl < message.ProtocolMetaBytes {
 		// data is not enough, wait next
-		return ErrorPkgNotFull
+		return ErrPkgNotFull
 	}
 	data, _ := reader.Peek(message.ProtocolMetaBytes)
 	pkgSize := int(c.odr.Uint32(data[:4])) // body len
@@ -82,18 +88,19 @@ func (c *smartCodec) Decode(reader netpoll.Reader, i interface{}) error {
 	// pkg size reach max size, close it
 	if pkgSize >= 65535 {
 		utility.DefaultLogger().Error("msg is too big.", zap.Int("size", pkgSize))
-		return ErrorTooBig
+		return ErrTooBig
 	}
 	//
 	if dl < pkgSize+message.ProtocolMetaBytes {
 		// game msg body is not enough. wait
-		return ErrorPkgNotFull
+		return ErrPkgNotFull
 	} else {
 		_ = reader.Skip(message.ProtocolMetaBytes)
 		pkg, _ := reader.ReadBinary(pkgSize)
 		if req, ok := i.(*message.ProtocolMessage); !ok {
-			return ErrorParamMessage
+			return ErrParamMessage
 		} else {
+			_ = reader.Release()
 			if err := proto.Unmarshal(pkg, req); err != nil {
 				utility.DefaultLogger().Error("failed to decode bytes to ProtocolMessage.", zap.Error(err))
 				return err

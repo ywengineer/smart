@@ -60,6 +60,10 @@ func (w *defaultWorker) Run(ctx context.Context, f func()) {
 	w.runner.CtxGo(ctx, f)
 }
 
+func (w *defaultWorker) Name() string {
+	return w.runner.Name()
+}
+
 func (w *defaultWorker) Status() interface{} {
 	return nil
 }
