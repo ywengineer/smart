@@ -2,6 +2,7 @@ package codec
 
 import (
 	"bytes"
+	"github.com/cloudwego/netpoll"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
@@ -19,18 +20,21 @@ func NewMsgpackCodec() Codec {
 type msgpackCodec struct{}
 
 // Encode encodes an object into slice of bytes.
-func (c *msgpackCodec) Encode(i interface{}) ([]byte, error) {
+func (c *msgpackCodec) Encode(i interface{}) (*netpoll.LinkBuffer, error) {
 	var buf bytes.Buffer
 	enc := msgpack.NewEncoder(&buf)
 	// enc.UseJSONTag(true)
 	err := enc.Encode(i)
-	return buf.Bytes(), err
+	return newLinkBuffer(buf.Bytes()), err
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *msgpackCodec) Decode(data []byte, i interface{}) error {
-	dec := msgpack.NewDecoder(bytes.NewReader(data))
-	// dec.UseJSONTag(true)
-	err := dec.Decode(i)
-	return err
+func (c *msgpackCodec) Decode(reader netpoll.Reader, i interface{}) error {
+	if buf, err := readAll(reader); err != nil {
+		return err
+	} else {
+		dec := msgpack.NewDecoder(bytes.NewReader(buf))
+		// dec.UseJSONTag(true)
+		return dec.Decode(i)
+	}
 }

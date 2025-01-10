@@ -22,6 +22,10 @@ type SocketChannel struct {
 	handlers  []ChannelHandler
 }
 
+func (h *SocketChannel) SendSmart(msg *message.ProtocolMessage) error {
+	return h.Send(msg)
+}
+
 // Send all data and event callback run in worker related SocketChannel
 func (h *SocketChannel) Send(msg interface{}) error {
 	// already encoded, send directly.
@@ -32,7 +36,7 @@ func (h *SocketChannel) Send(msg interface{}) error {
 	} else if data, err := h.codec.Encode(msg); err != nil { // encode message
 		return err
 	} else {
-		return h.send(data)
+		return h.send(data.Bytes())
 	}
 }
 
@@ -51,18 +55,6 @@ func (h *SocketChannel) send(data []byte) error {
 	}
 	writer := h.conn.Writer()
 	defer writer.Flush()
-	// 消息结构(len(4) + protocol(2) + compress(1) + flags(1) + payload(len))
-	if _, err := writer.WriteBinary(utility.Int32ToBytes(h.byteOrder, int32(len(data)))); err != nil {
-		utility.DefaultLogger().Error("write data len error", zap.Error(err))
-		return err
-	}
-	if _, err := writer.WriteBinary(utility.Int16ToBytes(h.byteOrder, int16(message.Smart))); err != nil {
-		utility.DefaultLogger().Error("write protocol id error", zap.Error(err))
-		return err
-	}
-	_ = writer.WriteByte(0)
-	_ = writer.WriteByte(0)
-	//
 	if _, err := writer.WriteBinary(data); err != nil {
 		utility.DefaultLogger().Error("write data error", zap.Error(err))
 		return err

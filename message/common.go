@@ -1,8 +1,6 @@
 package message
 
-import "reflect"
-
-var TypeReducible = reflect.TypeOf((*Reducible)(nil)).Elem()
+//var TypeReducible = reflect.TypeOf((*Reducible)(nil)).Elem()
 
 type ProtocolId int16
 
@@ -12,6 +10,6 @@ const (
 	Smart ProtocolId = iota
 )
 
-type Reducible interface {
-	Reset()
-}
+//type Reducible interface {
+//	Reset()
+//}

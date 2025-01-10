@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/netpoll"
 	"github.com/stretchr/testify/assert"
 	"github.com/ywengineer/smart/codec"
+	"github.com/ywengineer/smart/message"
 	"github.com/ywengineer/smart/server_config"
 	"github.com/ywengineer/smart/utility"
 	"testing"
@@ -61,7 +62,7 @@ func TestServer(t *testing.T) {
 		channel.onOpen()
 		defer channel.Close()
 		//
-		if err = channel.Send(Req{Ping: 1001, Extra: "first client message"}); err != nil {
+		if err = channel.SendSmart(&message.ProtocolMessage{}); err != nil {
 			t.Errorf("send 1001 failed. %v", err)
 		}
 		//

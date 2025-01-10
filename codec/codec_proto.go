@@ -2,6 +2,7 @@ package codec
 
 import (
 	"fmt"
+	"github.com/cloudwego/netpoll"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -19,17 +20,26 @@ func NewProtobufCodec() Codec {
 type protoCodec struct{}
 
 // Encode encodes an object into slice of bytes.
-func (c *protoCodec) Encode(i interface{}) ([]byte, error) {
+func (c *protoCodec) Encode(i interface{}) (*netpoll.LinkBuffer, error) {
 	if m, ok := i.(proto.Message); ok {
-		return proto.Marshal(m)
+		if b, err := proto.Marshal(m); err != nil {
+			return nil, err
+		} else {
+			return newLinkBuffer(b), nil
+		}
 	}
 	return nil, fmt.Errorf("%T is not a proto.Message", i)
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *protoCodec) Decode(data []byte, i interface{}) error {
+func (c *protoCodec) Decode(reader netpoll.Reader, i interface{}) error {
 	if m, ok := i.(proto.Message); ok {
-		return proto.Unmarshal(data, m)
+		bytes, e := readAll(reader)
+		if e != nil {
+			return e
+		}
+		e = proto.Unmarshal(bytes, m)
+		return e
 	}
 	return fmt.Errorf("%T is not a proto.Message", i)
 }

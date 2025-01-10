@@ -3,6 +3,7 @@ package codec
 import (
 	"errors"
 	"github.com/cloudwego/fastpb"
+	"github.com/cloudwego/netpoll"
 )
 
 var fpbc = &fastpbCodec{}
@@ -19,19 +20,23 @@ func NewFastpbCodec() Codec {
 type fastpbCodec struct{}
 
 // Encode encodes an object into slice of bytes.
-func (c *fastpbCodec) Encode(i interface{}) ([]byte, error) {
+func (c *fastpbCodec) Encode(i interface{}) (*netpoll.LinkBuffer, error) {
 	if v, ok := i.(fastpb.Writer); ok {
 		buf := make([]byte, v.Size())
 		v.FastWrite(buf)
-		return buf, nil
+		return newLinkBuffer(buf), nil
 	}
 	return nil, errors.New("fastpb codec encode not support")
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *fastpbCodec) Decode(data []byte, i interface{}) error {
+func (c *fastpbCodec) Decode(reader netpoll.Reader, i interface{}) error {
 	if v, ok := i.(fastpb.Reader); ok {
-		_, err := fastpb.ReadMessage(data, int8(fastpb.SkipTypeCheck), v)
+		bytes, err := readAll(reader)
+		if err != nil {
+			return err
+		}
+		_, err = fastpb.ReadMessage(bytes, int8(fastpb.SkipTypeCheck), v)
 		return err
 	}
 	return errors.New("fastpb codec decode not support")
