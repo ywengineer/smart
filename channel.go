@@ -22,10 +22,6 @@ type SocketChannel struct {
 	handlers  []ChannelHandler
 }
 
-func (h *SocketChannel) SendSmart(msg *message.ProtocolMessage) error {
-	return h.Send(msg)
-}
-
 // Send all data and event callback run in worker related SocketChannel
 func (h *SocketChannel) Send(msg interface{}) error {
 	// already encoded, send directly.

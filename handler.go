@@ -6,7 +6,6 @@ import (
 	"github.com/ywengineer/smart/message"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"reflect"
 	"sync"
 )
@@ -28,7 +27,6 @@ type handlerDefinition struct {
 }
 
 func (hd *handlerDefinition) invoke(channel *SocketChannel, in interface{}) interface{} {
-	defer hd.releaseIn(in)
 	out := hd.method.Call([]reflect.Value{reflect.ValueOf(channel), reflect.ValueOf(in)})
 	if len(out) == 0 {
 		return nil
@@ -37,15 +35,11 @@ func (hd *handlerDefinition) invoke(channel *SocketChannel, in interface{}) inte
 }
 
 func (hd *handlerDefinition) releaseIn(in interface{}) {
-	// no need to invoke Reset method when in is a protobuf message
-	if _, ok := in.(proto.Message); !ok {
-		in.(message.Reducible).Reset()
-	}
 	// release in to object pool
 	hd.inPool.Put(in)
 }
 
-func (hd *handlerDefinition) getIn() interface{} {
+func (hd *handlerDefinition) newIn() interface{} {
 	return hd.inPool.Get()
 }
 
@@ -57,22 +51,26 @@ type handlerManager struct {
 func (hm *handlerManager) invokeHandler(ctx context.Context, c *SocketChannel, req *message.ProtocolMessage) {
 	hd := hm.findHandlerDefinition(req.GetRoute())
 	if hd == nil {
-		utility.DefaultLogger().Warn("handler definition not found for message code", zap.Int32("msgCode", req.GetRoute()))
+		utility.DefaultLogger().Error("handler definition not found for message code", zap.Int32("msgCode", req.GetRoute()))
 		return
 	}
 	// find codec
 	_codec := findMessageCodec(c, req.Codec)
 	if _codec == nil {
+		utility.DefaultLogger().Error("message codec not found", zap.String("codec", req.GetCodec().String()))
 		_ = c.Close()
 		return
 	}
-	in := hd.getIn()
+	in, buf := hd.newIn(), utility.NewLinkBuffer(req.Payload)
+	defer func() {
+		hd.releaseIn(in)
+		_ = buf.Release()
+	}()
 	// decode message
-	if err := _codec.Decode(req.Payload, in); err != nil {
+	if err := _codec.Decode(buf, in); err != nil {
 		// decode failed. close channel
 		utility.DefaultLogger().Error("decode message error. suspicious channel, close it.", zap.Error(err))
 		_ = c.Close()
-		hd.releaseIn(in)
 	} else if response := hd.invoke(c, in); response != nil {
 		if err = c.Send(response); err != nil { // send response
 			utility.DefaultLogger().Error("send response error", zap.Error(err))
@@ -119,7 +117,9 @@ func findMessageCodec(sc *SocketChannel, mc message.Codec) codec.Codec {
 		return nil
 	case message.Codec_FAST_PB:
 		return codec.Fastpb()
-	default:
+	case message.Codec_SERVER:
 		return sc.codec
+	default:
+		return nil
 	}
 }

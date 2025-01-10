@@ -25,7 +25,7 @@ func TestServer(t *testing.T) {
 			return binary.LittleEndian
 		}),
 		WithCodec(func() codec.Codec {
-			return codec.Json()
+			return codec.NewSmartCodec(binary.LittleEndian)
 		}),
 		AppendHandler(func() ChannelHandler { return NewGameMessageHandler() }),
 	)
@@ -62,15 +62,33 @@ func TestServer(t *testing.T) {
 		channel.onOpen()
 		defer channel.Close()
 		//
-		if err = channel.SendSmart(&message.ProtocolMessage{}); err != nil {
+		if err = channel.Send(&message.ProtocolMessage{
+			Seq:     1,
+			Route:   1001,
+			Header:  map[string]string{},
+			Codec:   message.Codec_JSON,
+			Payload: []byte(`{"key":"1001"}`),
+		}); err != nil {
 			t.Errorf("send 1001 failed. %v", err)
 		}
 		//
-		if err = channel.Send(Req{Ping: 1002, Extra: "first 1002 message"}); err != nil {
+		if err = channel.Send(&message.ProtocolMessage{
+			Seq:     2,
+			Route:   1001,
+			Header:  map[string]string{},
+			Codec:   message.Codec_JSON,
+			Payload: []byte(`{"key":"1002"}`),
+		}); err != nil {
 			t.Errorf("send 1002 failed. %v", err)
 		}
 		//
-		if err = channel.Send(Req{Ping: 1003, Extra: "first 1003 message"}); err != nil {
+		if err = channel.Send(&message.ProtocolMessage{
+			Seq:     3,
+			Route:   1001,
+			Header:  map[string]string{},
+			Codec:   message.Codec_JSON,
+			Payload: []byte(`{"key":"1003"}`),
+		}); err != nil {
 			t.Errorf("send 1003 failed. %v", err)
 		}
 	}()

@@ -16,12 +16,6 @@ func NewByteCodec() Codec {
 	return &byteCodec{}
 }
 
-func newLinkBuffer(data []byte) *netpoll.LinkBuffer {
-	lb := netpoll.NewLinkBuffer(len(data))
-	_, _ = lb.WriteBinary(data)
-	return lb
-}
-
 func readAll(reader netpoll.Reader) ([]byte, error) {
 	return reader.ReadBinary(reader.Len())
 }
@@ -37,7 +31,6 @@ type byteCodec struct{}
 
 // Encode returns raw slice of bytes.
 func (c *byteCodec) Encode(i interface{}) ([]byte, error) {
-	netpoll.NewLinkBuffer()
 	if data, ok := i.([]byte); ok {
 		return data, nil
 	}

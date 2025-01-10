@@ -1,6 +1,9 @@
 package utility
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"github.com/cloudwego/netpoll"
+)
 
 func Int64ToBytes(odr binary.ByteOrder, i int64) []byte {
 	var buf = make([]byte, 8)
@@ -22,4 +25,10 @@ func Int16ToBytes(odr binary.ByteOrder, i int16) []byte {
 
 func BytesToInt64(odr binary.ByteOrder, buf []byte) int64 {
 	return int64(odr.Uint64(buf))
+}
+
+func NewLinkBuffer(data []byte) *netpoll.LinkBuffer {
+	lb := netpoll.NewLinkBuffer(len(data))
+	_, _ = lb.WriteBinary(data)
+	return lb
 }
