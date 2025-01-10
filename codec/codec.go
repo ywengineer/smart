@@ -28,7 +28,7 @@ func readAll(reader netpoll.Reader) ([]byte, error) {
 
 // Codec defines the interface that decode/encode payload.
 type Codec interface {
-	Encode(i interface{}) (*netpoll.LinkBuffer, error)
+	Encode(i interface{}) ([]byte, error)
 	Decode(reader netpoll.Reader, i interface{}) error
 }
 
@@ -36,13 +36,13 @@ type Codec interface {
 type byteCodec struct{}
 
 // Encode returns raw slice of bytes.
-func (c *byteCodec) Encode(i interface{}) (*netpoll.LinkBuffer, error) {
+func (c *byteCodec) Encode(i interface{}) ([]byte, error) {
 	netpoll.NewLinkBuffer()
 	if data, ok := i.([]byte); ok {
-		return newLinkBuffer(data), nil
+		return data, nil
 	}
 	if data, ok := i.(*[]byte); ok {
-		return newLinkBuffer(*data), nil
+		return *data, nil
 	}
 
 	return nil, fmt.Errorf("%T is not a []byte", i)

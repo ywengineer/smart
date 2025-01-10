@@ -20,11 +20,11 @@ func NewFastpbCodec() Codec {
 type fastpbCodec struct{}
 
 // Encode encodes an object into slice of bytes.
-func (c *fastpbCodec) Encode(i interface{}) (*netpoll.LinkBuffer, error) {
+func (c *fastpbCodec) Encode(i interface{}) ([]byte, error) {
 	if v, ok := i.(fastpb.Writer); ok {
 		buf := make([]byte, v.Size())
 		v.FastWrite(buf)
-		return newLinkBuffer(buf), nil
+		return buf, nil
 	}
 	return nil, errors.New("fastpb codec encode not support")
 }

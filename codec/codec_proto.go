@@ -20,13 +20,9 @@ func NewProtobufCodec() Codec {
 type protoCodec struct{}
 
 // Encode encodes an object into slice of bytes.
-func (c *protoCodec) Encode(i interface{}) (*netpoll.LinkBuffer, error) {
+func (c *protoCodec) Encode(i interface{}) ([]byte, error) {
 	if m, ok := i.(proto.Message); ok {
-		if b, err := proto.Marshal(m); err != nil {
-			return nil, err
-		} else {
-			return newLinkBuffer(b), nil
-		}
+		return proto.Marshal(m)
 	}
 	return nil, fmt.Errorf("%T is not a proto.Message", i)
 }

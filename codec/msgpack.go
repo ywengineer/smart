@@ -20,12 +20,12 @@ func NewMsgpackCodec() Codec {
 type msgpackCodec struct{}
 
 // Encode encodes an object into slice of bytes.
-func (c *msgpackCodec) Encode(i interface{}) (*netpoll.LinkBuffer, error) {
+func (c *msgpackCodec) Encode(i interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := msgpack.NewEncoder(&buf)
 	// enc.UseJSONTag(true)
 	err := enc.Encode(i)
-	return newLinkBuffer(buf.Bytes()), err
+	return buf.Bytes(), err
 }
 
 // Decode decodes an object from slice of bytes.

@@ -51,16 +51,17 @@ type smartCodec struct {
 }
 
 // Encode encodes an object into slice of bytes.
-func (c *smartCodec) Encode(i interface{}) (*netpoll.LinkBuffer, error) {
+func (c *smartCodec) Encode(i interface{}) ([]byte, error) {
 	if req, ok := i.(*message.ProtocolMessage); !ok {
 		bytes, _ := proto.Marshal(req)
 		buffer := netpoll.NewLinkBuffer(message.ProtocolMetaBytes + len(bytes))
+		defer buffer.Release()
 		_, _ = buffer.WriteBinary(utility.Int32ToBytes(c.odr, int32(len(bytes)))) // body len
 		_, _ = buffer.WriteBinary(utility.Int16ToBytes(c.odr, int16(0)))          // protocol
 		_ = buffer.WriteByte(0)                                                   // compress
 		_ = buffer.WriteByte(0)                                                   // flags
 		_, _ = buffer.WriteBinary(bytes)
-		return buffer, nil
+		return buffer.Bytes(), nil
 	}
 	return nil, ErrorParamMessage
 }

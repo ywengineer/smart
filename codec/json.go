@@ -20,12 +20,8 @@ func NewJsonCodec() Codec {
 type jsonCodec struct{}
 
 // Encode encodes an object into slice of bytes.
-func (c *jsonCodec) Encode(i interface{}) (*netpoll.LinkBuffer, error) {
-	if buf, err := sonic.Marshal(i); err != nil {
-		return nil, err
-	} else {
-		return newLinkBuffer(buf), nil
-	}
+func (c *jsonCodec) Encode(i interface{}) ([]byte, error) {
+	return sonic.Marshal(i)
 }
 
 // Decode decodes an object from slice of bytes.

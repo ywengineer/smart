@@ -36,7 +36,7 @@ func (h *SocketChannel) Send(msg interface{}) error {
 	} else if data, err := h.codec.Encode(msg); err != nil { // encode message
 		return err
 	} else {
-		return h.send(data.Bytes())
+		return h.send(data)
 	}
 }
 
