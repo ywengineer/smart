@@ -13,14 +13,15 @@ import (
 )
 
 type SocketChannel struct {
-	ctx         context.Context
-	fd          int
-	conn        netpoll.Connection
-	codec       codec.Codec
-	byteOrder   binary.ByteOrder
-	worker      Worker
-	handlers    []ChannelHandler
-	msgHandlers []MessageHandler
+	ctx          context.Context
+	fd           int
+	conn         netpoll.Connection
+	codec        codec.Codec
+	byteOrder    binary.ByteOrder
+	worker       Worker
+	handlers     []ChannelHandler
+	interceptors []MessageInterceptor
+	msgHandlers  []MessageHandler
 }
 
 // Send all data and event callback run in worker related SocketChannel
@@ -99,14 +100,30 @@ func (h *SocketChannel) onMessageRead(ctx context.Context) error {
 			return func() {
 				defer protocolMessagePool.Put(msg)
 				//
+				ctx = context.WithValue(ctx, CtxKeySeq, msg.GetSeq())
+				ctx = context.WithValue(ctx, CtxKeyHeader, msg.GetHeader())
+				//
+				if len(h.interceptors) > 0 {
+					for _, handler := range h.interceptors {
+						if err := handler.BeforeInvoke(ctx, h, msg); err != nil {
+							return
+						}
+					}
+				}
+				//
 				if len(h.msgHandlers) > 0 {
-					//
-					ctx = context.WithValue(ctx, CtxKeySeq, msg.GetSeq())
-					ctx = context.WithValue(ctx, CtxKeyHeader, msg.GetHeader())
-					//
 					for _, handler := range h.msgHandlers {
 						if err := handler.OnMessage(ctx, h, msg); err != nil {
-							break
+							return
+						}
+					}
+				}
+				//
+				if len(h.interceptors) > 0 {
+					deep := len(h.interceptors)
+					for index := range h.interceptors {
+						if err := h.interceptors[deep-index-1].AfterInvoke(ctx, h, msg); err != nil {
+							return
 						}
 					}
 				}

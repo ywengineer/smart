@@ -17,6 +17,14 @@ type MessageHandler interface {
 	OnMessage(ctx context.Context, channel *SocketChannel, msg *message.ProtocolMessage) error
 }
 
+// MessageInterceptor interceptor message handler
+type MessageInterceptor interface {
+	// BeforeInvoke skip execute next interceptor and message handler when return error
+	BeforeInvoke(ctx context.Context, channel *SocketChannel, msg *message.ProtocolMessage) error
+	// AfterInvoke skip execute next interceptor when return error
+	AfterInvoke(ctx context.Context, channel *SocketChannel, msg *message.ProtocolMessage) error
+}
+
 type ChannelInitializer func(channel *SocketChannel)
 
 func WithCodec(f func() codec.Codec) ChannelInitializer {
@@ -40,6 +48,12 @@ func AppendHandler(f func() ChannelHandler) ChannelInitializer {
 func AppendMessageHandler(f func() MessageHandler) ChannelInitializer {
 	return func(channel *SocketChannel) {
 		channel.msgHandlers = append(channel.msgHandlers, f())
+	}
+}
+
+func AppendMessageInterceptor(f func() MessageInterceptor) ChannelInitializer {
+	return func(channel *SocketChannel) {
+		channel.interceptors = append(channel.interceptors, f())
 	}
 }
 
