@@ -3,6 +3,7 @@ package utility
 import (
 	"encoding/binary"
 	"github.com/cloudwego/netpoll"
+	"strings"
 )
 
 func Int64ToBytes(odr binary.ByteOrder, i int64) []byte {
@@ -32,4 +33,11 @@ func NewLinkBuffer(data []byte) *netpoll.LinkBuffer {
 	_, _ = lb.WriteBinary(data)
 	_ = lb.Flush()
 	return lb
+}
+
+func IfEmptyStr(str, defaultStr string) string {
+	if len(strings.TrimSpace(str)) == 0 {
+		return defaultStr
+	}
+	return str
 }

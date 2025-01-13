@@ -39,7 +39,7 @@ type cache struct {
 	data map[int32]interface{}
 }
 
-// int(params[0]) is the sheet number of an excel file when CfgType is Excel
+// LoadConfig int(params[0]) is the sheet number of an excel file when CfgType is Excel
 func LoadConfig(t CfgType, file, name string, cfg interface{}, params ...interface{}) error {
 	var c *cache
 	var err error

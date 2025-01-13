@@ -37,7 +37,7 @@ type smartServer struct {
 	conf          *server_config.Conf
 }
 
-func NewSmartServer(loader server_config.Loader, initializer ...ChannelInitializer) (*smartServer, error) {
+func NewSmartServer(loader server_config.SmartLoader, initializer ...ChannelInitializer) (*smartServer, error) {
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}

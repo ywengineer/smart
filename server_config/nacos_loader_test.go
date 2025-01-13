@@ -11,12 +11,7 @@ import (
 
 func TestNacosLoader(t *testing.T) {
 	nc := newNacosTestClient(t)
-	loader := &NacosLoader{
-		Client:  nc,
-		DataId:  "smart.server.yaml",
-		Group:   "DEFAULT_GROUP",
-		Decoder: &YamlDecoder{},
-	}
+	loader := NewNacosLoader(nc, "DEFAULT_GROUP", "smart.server.yaml", NewYamlDecoder())
 	c, err := loader.Load()
 	assert.Nil(t, err)
 	t.Logf("%v", *c)

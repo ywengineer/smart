@@ -17,16 +17,24 @@ type Decoder interface {
 	Unmarshal(buf []byte, val interface{}) error
 }
 
-type JSONDecoder struct {
+func NewJsonDecoder() Decoder {
+	return &jsonDecoder{}
 }
 
-func (d *JSONDecoder) Unmarshal(buf []byte, val interface{}) error {
+func NewYamlDecoder() Decoder {
+	return &yamlDecoder{}
+}
+
+type jsonDecoder struct {
+}
+
+func (d *jsonDecoder) Unmarshal(buf []byte, val interface{}) error {
 	return sonic.Unmarshal(buf, val)
 }
 
-type YamlDecoder struct {
+type yamlDecoder struct {
 }
 
-func (d *YamlDecoder) Unmarshal(buf []byte, val interface{}) error {
+func (d *yamlDecoder) Unmarshal(buf []byte, val interface{}) error {
 	return yaml.Unmarshal(buf, val)
 }

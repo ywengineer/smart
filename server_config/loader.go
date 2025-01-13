@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Loader interface {
+type SmartLoader interface {
 	Load() (*Conf, error)
 	Watch(ctx context.Context, callback func(conf *Conf)) error
 }

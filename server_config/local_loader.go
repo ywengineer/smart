@@ -22,9 +22,9 @@ func (ll *LocalLoader) Load() (*Conf, error) {
 	if ll.Decoder == nil {
 		fs := ll.Path[strings.LastIndex(ll.Path, ".")+1:]
 		if strings.EqualFold(fs, "json") {
-			ll.Decoder = &JSONDecoder{}
+			ll.Decoder = &jsonDecoder{}
 		} else if strings.EqualFold(fs, "yaml") || strings.EqualFold(fs, "yml") {
-			ll.Decoder = &YamlDecoder{}
+			ll.Decoder = &yamlDecoder{}
 		} else {
 			return nil, errors.Errorf("unsupported file : %s", ll.Path)
 		}
