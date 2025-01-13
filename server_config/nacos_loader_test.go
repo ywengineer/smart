@@ -1,44 +1,25 @@
 package server_config
 
 import (
-	"github.com/nacos-group/nacos-sdk-go/v2/clients"
-	"github.com/nacos-group/nacos-sdk-go/v2/clients/config_client"
-	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
-	"github.com/nacos-group/nacos-sdk-go/v2/vo"
+	"context"
 	"github.com/stretchr/testify/assert"
+	"github.com/ywengineer/smart/utility"
 	"testing"
 )
 
 func TestNacosLoader(t *testing.T) {
-	nc := newNacosTestClient(t)
-	loader := NewNacosLoader(nc, "DEFAULT_GROUP", "smart.server.yaml", NewYamlDecoder())
+	nc, err := NewNacosClient("192.168.44.128", 8848, "/nacos", 5000,
+		"a7aabc24-17a7-4ac5-978f-6f933ce19dd4", "nacos", "nacos", "debug")
+	assert.Nil(t, err)
+	//
+	loader := NewNacosLoader(nc, "DEFAULT_GROUP", "smart.gate.yaml", NewYamlDecoder())
 	c, err := loader.Load()
 	assert.Nil(t, err)
 	t.Logf("%v", *c)
-}
-
-func newNacosTestClient(t *testing.T) config_client.IConfigClient {
-	//create ServerConfig
-	sc := []constant.ServerConfig{
-		*constant.NewServerConfig("192.168.0.15", 8848, constant.WithContextPath("/nacos")),
-	}
-
-	//create ClientConfig
-	cc := *constant.NewClientConfig(
-		constant.WithNamespaceId(""),
-		constant.WithTimeoutMs(5000),
-		constant.WithNotLoadCacheAtStart(true),
-		constant.WithUsername("nacos"),
-		constant.WithPassword("vspn"),
-		constant.WithLogLevel("debug"),
-	)
-	// create server_config client
-	client, err := clients.NewConfigClient(
-		vo.NacosClientParam{
-			ClientConfig:  &cc,
-			ServerConfigs: sc,
-		},
-	)
+	err = loader.Watch(context.Background(), func(conf *Conf) {
+		t.Logf("config change: %v", *conf)
+	})
 	assert.Nil(t, err)
-	return client
+	<-utility.WatchQuitSignal()
+	t.Log("test finished")
 }

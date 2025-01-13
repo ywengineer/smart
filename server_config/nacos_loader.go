@@ -2,7 +2,9 @@ package server_config
 
 import (
 	"context"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/config_client"
+	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/pkg/errors"
 	"github.com/ywengineer/smart/utility"
@@ -24,6 +26,39 @@ func NewNacosLoader(nacos config_client.IConfigClient, group string, dataId stri
 		group:   utility.IfEmptyStr(group, "DEFAULT_GROUP"),
 		decoder: decoder,
 	}
+}
+
+func NewDefaultNacosLoader(nacos config_client.IConfigClient, dataId string, decoder Decoder) SmartLoader {
+	return NewNacosLoader(nacos, "DEFAULT_GROUP", dataId, decoder)
+}
+
+// NewNacosClient
+// contextPath, nacos server context path
+// the logLevel must be debug,info,warn,error, default value is info
+func NewNacosClient(ipAddr string, port uint64, contextPath string,
+	timeoutMs uint64,
+	namespace, user, password, logLevel string,
+) (config_client.IConfigClient, error) {
+	// create ServerConfig
+	sc := []constant.ServerConfig{
+		*constant.NewServerConfig(ipAddr, port, constant.WithContextPath(contextPath)),
+	}
+	//create ClientConfig
+	cc := *constant.NewClientConfig(
+		constant.WithNamespaceId(namespace),
+		constant.WithTimeoutMs(timeoutMs),
+		constant.WithNotLoadCacheAtStart(true),
+		constant.WithUsername(user),
+		constant.WithPassword(password),
+		constant.WithLogLevel(logLevel),
+	)
+	// create server_config client
+	return clients.NewConfigClient(
+		vo.NacosClientParam{
+			ClientConfig:  &cc,
+			ServerConfigs: sc,
+		},
+	)
 }
 
 func (nl *nacosLoader) Load() (*Conf, error) {

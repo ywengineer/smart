@@ -25,16 +25,18 @@ const (
 )
 
 type smartServer struct {
-	lock          sync.Mutex
-	status        status
-	ctx           context.Context
-	shutdownHook  context.CancelFunc
-	eventLoop     netpoll.EventLoop
-	channels      sync.Map // key=fd, value=connection
-	channelCount  int32    // accept counter
-	initializers  []ChannelInitializer
-	workerManager WorkerManager
-	conf          *server_config.Conf
+	lock           sync.Mutex
+	status         status
+	ctx            context.Context
+	shutdownHook   context.CancelFunc
+	eventLoop      netpoll.EventLoop
+	channels       sync.Map // key=fd, value=connection
+	channelCount   int32    // accept counter
+	initializers   []ChannelInitializer
+	workerManager  WorkerManager
+	conf           *server_config.Conf
+	confWatcher    func(ctx context.Context, callback func(conf *server_config.Conf)) error
+	onConfigChange func(conf server_config.Conf)
 }
 
 func NewSmartServer(loader server_config.SmartLoader, initializer ...ChannelInitializer) (*smartServer, error) {
@@ -45,6 +47,8 @@ func NewSmartServer(loader server_config.SmartLoader, initializer ...ChannelInit
 	conf, err := loader.Load()
 	if err != nil || conf == nil {
 		return nil, errors.WithMessage(err, "load server server_config error")
+	} else {
+		utility.DefaultLogger().Debug("new smart server with conf", zap.Any("conf", *conf))
 	}
 	worker, _ := NewWorkerManager(utility.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
 	server := &smartServer{
@@ -52,6 +56,7 @@ func NewSmartServer(loader server_config.SmartLoader, initializer ...ChannelInit
 		workerManager: worker,
 		initializers:  initializer,
 		conf:          conf,
+		confWatcher:   loader.Watch,
 	}
 	return server, nil
 }
@@ -83,6 +88,18 @@ func (s *smartServer) Serve() (context.Context, error) {
 			_ = s.Shutdown()
 		}
 	}()
+	// watch config
+	if err := s.confWatcher(s.ctx, func(conf *server_config.Conf) {
+		utility.DefaultLogger().Debug("server config changed", zap.Any("old", *s.conf), zap.Any("new", *conf))
+		if s.onConfigChange != nil {
+			s.onConfigChange(*conf)
+		}
+		s.conf = conf
+	}); err != nil {
+		utility.DefaultLogger().Error("server config watcher start error", zap.Error(err))
+	} else {
+		utility.DefaultLogger().Debug("server config watcher started")
+	}
 	return s.ctx, nil
 }
 
@@ -96,6 +113,10 @@ func (s *smartServer) Shutdown() error {
 	s.status = stopped
 	s.shutdownHook()
 	return s.eventLoop.Shutdown(s.ctx)
+}
+
+func (s *smartServer) SetOnConfigChange(callback func(conf server_config.Conf)) {
+	s.onConfigChange = callback
 }
 
 func (s *smartServer) onConnPrepare(conn netpoll.Connection) context.Context {
