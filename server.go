@@ -82,12 +82,13 @@ func (s *smartServer) Serve() (context.Context, error) {
 		} else if listener, err = netpoll.CreateListener(s.conf.Network, s.conf.Address); err != nil {
 			utility.DefaultLogger().Panic("create server listener error", zap.Error(err))
 		}
+		//
+		utility.DefaultLogger().Info("serve run at", zap.Any("address", s.conf.Network+s.conf.Address))
+		//
 		if err = eventLoop.Serve(listener); err != nil {
 			utility.DefaultLogger().Panic("serve listener error", zap.Error(err))
 			// start failed or serve quit
 			_ = s.Shutdown()
-		} else {
-			utility.DefaultLogger().Info("serve run at", zap.Any("address", s.conf.Network+s.conf.Address))
 		}
 	}()
 	// watch config

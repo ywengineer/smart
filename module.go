@@ -28,7 +28,7 @@ func RegisterModule(module SmartModule) error {
 		mName := mv.Type().Method(mIndex).Name
 		mSignature := method.Type()
 		handlerMatched := handlerSignatureRegexp.FindStringSubmatch(mName)
-		if len(handlerMatched) < 3 {
+		if len(handlerMatched) < 2 { // method signature must contains route code
 			utility.DefaultLogger().Debug("not a request handler", zap.String("method", mName), zap.String("regexp", handlerRegexp))
 			continue
 		}
