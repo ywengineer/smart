@@ -86,6 +86,8 @@ func (s *smartServer) Serve() (context.Context, error) {
 			utility.DefaultLogger().Panic("serve listener error", zap.Error(err))
 			// start failed or serve quit
 			_ = s.Shutdown()
+		} else {
+			utility.DefaultLogger().Info("serve run at", zap.Any("address", s.conf.Network+s.conf.Address))
 		}
 	}()
 	// watch config
