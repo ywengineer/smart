@@ -2,5 +2,7 @@
   "network": "tcp",
   "address": ":12345",
   "workers": 1,
-  "load_balance": "rr"
+  "load_balance": "rr",
+  "service_name": "game",
+  "weight": 1
 }

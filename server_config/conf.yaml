@@ -2,3 +2,5 @@ network: "tcp"
 address: ":12345"
 workers: 1
 load-balance: "hash"
+service-name: "game"
+weight: 10
