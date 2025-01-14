@@ -3,7 +3,6 @@ package smart
 import (
 	"context"
 	"encoding/binary"
-	"github.com/cloudwego/netpoll"
 	"github.com/stretchr/testify/assert"
 	"github.com/ywengineer/smart/codec"
 	"github.com/ywengineer/smart/message"
@@ -43,7 +42,7 @@ func TestServerWithNacos(t *testing.T) {
 	assert.Nil(t, err)
 	t.Log("smart nacos server was started.")
 	//
-	runClient(t, ctx, srv.conf.Network, srv.conf.Address, srv.workerManager, srv.initializers)
+	runClient(t, ctx, srv.conf.Network, srv.conf.Address, srv.initializers)
 	//
 	_ = <-utility.WatchQuitSignal()
 	// 5. wait smart server shutdown
@@ -78,38 +77,24 @@ func TestServer(t *testing.T) {
 	assert.Nil(t, err)
 	t.Log("smart server was started.")
 	//
-	runClient(t, ctx, network, addr, srv.workerManager, srv.initializers)
+	runClient(t, ctx, network, addr, srv.initializers)
 	//
 	_ = <-utility.WatchQuitSignal()
 	// 5. wait smart server shutdown
 	t.Logf("smart server was stopped. %v", srv.Shutdown())
 }
 
-func runClient(t *testing.T, ctx context.Context, network, addr string, wm WorkerManager, initializers []ChannelInitializer) {
+func runClient(t *testing.T, ctx context.Context, network, addr string, initializers []ChannelInitializer) {
 	go func() {
 		time.Sleep(5 * time.Second)
+		var err error
 		//
-		dialer := netpoll.NewDialer()
+		channel := NewAutoCloseSmartClient(ctx, network, addr, initializers)
 		//
-		conn, err := dialer.DialConnection(network, addr, time.Second)
-		if err != nil {
-			t.Errorf("dial failed. %v", err)
+		if channel == nil {
+			t.Error("dial failed")
+			return
 		}
-		//
-		channel := &SocketChannel{
-			ctx:    context.Background(),
-			fd:     conn.(netpoll.Conn).Fd(),
-			conn:   conn,
-			worker: wm.Pick(conn.(netpoll.Conn).Fd()),
-		}
-		//conn.AddCloseCallback(channel.onClose)
-		_ = conn.SetOnRequest(func(ctx context.Context, connection netpoll.Connection) error {
-			return channel.onMessageRead(ctx)
-		})
-		for _, initializer := range initializers {
-			initializer(channel)
-		}
-		channel.onOpen()
 		//
 		if err = channel.Send(&message.ProtocolMessage{
 			Seq:     1,
@@ -150,20 +135,5 @@ func runClient(t *testing.T, ctx context.Context, network, addr string, wm Worke
 		}); err != nil {
 			t.Errorf("send 1004 failed. %v", err)
 		}
-		//
-		go func() {
-			for {
-				select {
-				case <-ctx.Done():
-					t.Logf("[Done] close channel: %v", channel.Close())
-					return
-				default:
-					if ctx.Err() != nil {
-						t.Logf("[Err] close channel: %v", channel.Close())
-						return
-					}
-				}
-			}
-		}()
 	}()
 }

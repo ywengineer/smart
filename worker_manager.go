@@ -18,6 +18,12 @@ type Worker interface {
 	Status() interface{}
 }
 
+func NewSingleWorker(name string, panicHandler func(context.Context, interface{})) Worker {
+	p := gopool.NewPool(name, 1, gopool.NewConfig())
+	p.SetPanicHandler(panicHandler)
+	return &defaultWorker{runner: p}
+}
+
 // NewWorkerManager create default worker manager for process client channel
 func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
 	if poolSize < 1 {
@@ -26,9 +32,7 @@ func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
 	}
 	manager := &defaultWorkerManager{}
 	for idx := 0; idx < poolSize; idx++ {
-		p := gopool.NewPool(fmt.Sprintf("smart-handlers-%d", idx), 1, gopool.NewConfig())
-		p.SetPanicHandler(manager.errorHandler)
-		manager.workers = append(manager.workers, &defaultWorker{runner: p})
+		manager.workers = append(manager.workers, NewSingleWorker(fmt.Sprintf("smart-worker-%d", idx), manager.errorHandler))
 	}
 	manager.balance = newLoadBalance(lb, manager.workers)
 	return manager, nil
