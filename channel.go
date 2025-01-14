@@ -100,6 +100,7 @@ func (h *SocketChannel) onMessageRead(ctx context.Context) error {
 			return func() {
 				defer protocolMessagePool.Put(msg)
 				//
+				ctx = context.WithValue(ctx, CtxKeyFromClient, h.GetFd())
 				ctx = context.WithValue(ctx, CtxKeySeq, msg.GetSeq())
 				ctx = context.WithValue(ctx, CtxKeyHeader, msg.GetHeader())
 				//
@@ -120,9 +121,8 @@ func (h *SocketChannel) onMessageRead(ctx context.Context) error {
 				}
 				//
 				if len(h.interceptors) > 0 {
-					deep := len(h.interceptors)
-					for index := range h.interceptors {
-						if err := h.interceptors[deep-index-1].AfterInvoke(ctx, h, msg); err != nil {
+					for deep := len(h.interceptors) - 1; deep >= 0; deep-- {
+						if err := h.interceptors[deep].AfterInvoke(ctx, h, msg); err != nil {
 							return
 						}
 					}
