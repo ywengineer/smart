@@ -71,6 +71,8 @@ func (s *smartServer) Serve() (context.Context, error) {
 	eventLoop, _ := netpoll.NewEventLoop(s.onConnRead, netpoll.WithOnPrepare(s.onConnPrepare), netpoll.WithOnConnect(s.onConnOpen))
 	s.eventLoop = eventLoop
 	s.status = running
+	//
+	s.ctx = context.WithValue(s.ctx, CtxKeyService, s.conf.ServiceName)
 	// start listen loop ...
 	go func() {
 		var listener net.Listener

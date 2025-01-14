@@ -12,6 +12,7 @@ const (
 	CtxKeyTimestamp   = "timestamp"    // value type is int32
 	CtxKeyHeader      = "header"       // value type is map[string][string]
 	CtxKeyFrom        = "from"         // value type is string
+	CtxKeyService     = "service"      // value type is string, current service name
 	CtxKeyFromClient  = "from-client"  // value type is int, connection id
 	CtxKeyFromService = "from-service" // value type is string, service name
 	CtxKeyToClient    = "to-client"    // value type is int, connection id
