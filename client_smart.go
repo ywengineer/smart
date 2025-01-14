@@ -26,8 +26,8 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 		utility.DefaultLogger().Panic("connect to smart server failed", zap.String("server", network+addr), zap.Error(err))
 		return nil
 	}
+	//------------------------------------------------------------------------------------
 	scId := strconv.FormatUint(atomic.AddUint64(&seqSmartClient, 1), 10)
-	//
 	channel := &SocketChannel{
 		ctx:  ctx,
 		fd:   conn.(netpoll.Conn).Fd(),
@@ -36,13 +36,18 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 			utility.DefaultLogger().Error("client worker panic occurred", zap.String("smart-client", scId), zap.Any("err", i))
 		}),
 	}
-	//conn.AddCloseCallback(channel.onClose)
-	_ = conn.SetOnRequest(func(ctx context.Context, connection netpoll.Connection) error {
-		return channel.onMessageRead(ctx)
-	})
 	for _, initializer := range initializers {
 		initializer(channel)
 	}
+	//------------------------------------------------------------------------------------
+	_ = conn.SetOnRequest(func(ctx context.Context, connection netpoll.Connection) error {
+		return channel.onMessageRead(ctx)
+	})
+	_ = conn.AddCloseCallback(func(connection netpoll.Connection) error {
+		channel.onClose()
+		return nil
+	})
+	//------------------------------------------------------------------------------------
 	channel.onOpen()
 	// 自动关闭
 	if autoClose {
