@@ -40,7 +40,7 @@ func NewMySQL(driver RdbProperties) (*gorm.DB, error) {
 		DontSupportRenameIndex:    true,  // drop & create when rename index, rename index not supported before MySQL 5.7, MariaDB
 		DontSupportRenameColumn:   true,  // `change` when rename column, rename column not supported before MySQL 8, MariaDB
 		SkipInitializeWithVersion: false, // autoconfigure based on currently MySQL version
-	}), &gorm.Config{})
+	}), defaultConfig())
 }
 
 // NewPostgres create gorm.DB instance based on postgres database
@@ -54,7 +54,7 @@ func NewPostgres(driver RdbProperties) (*gorm.DB, error) {
 	return gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: true, // disables implicit prepared statement usage
-	}), &gorm.Config{})
+	}), defaultConfig())
 }
 
 func initRbdConnPool(gdb *gorm.DB, driver RdbProperties) (*gorm.DB, error) {
@@ -71,4 +71,10 @@ func initRbdConnPool(gdb *gorm.DB, driver RdbProperties) (*gorm.DB, error) {
 		return nil, err
 	}
 	return gdb, nil
+}
+
+func defaultConfig() *gorm.Config {
+	return &gorm.Config{
+		PrepareStmt: true,
+	}
 }
