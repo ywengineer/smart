@@ -8,7 +8,6 @@ require (
 	github.com/cloudwego/fastpb v0.0.5
 	github.com/cloudwego/netpoll v0.6.5
 	github.com/fsnotify/fsnotify v1.8.0
-	github.com/go-sql-driver/mysql v1.8.1
 	github.com/nacos-group/nacos-sdk-go/v2 v2.2.7
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.10.0
@@ -19,7 +18,11 @@ require (
 	google.golang.org/protobuf v1.36.2
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
+	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
+	gorm.io/driver/mysql v1.5.7
+	gorm.io/driver/postgres v1.5.11
+	gorm.io/gorm v1.25.12
 )
 
 require (
@@ -36,6 +39,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -58,6 +62,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.4 // indirect
+	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
@@ -73,8 +78,4 @@ require (
 	google.golang.org/grpc v1.56.3 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gorm.io/driver/mysql v1.5.7 // indirect
-	gorm.io/driver/postgres v1.5.11 // indirect
-	gorm.io/gorm v1.25.12 // indirect
 )
