@@ -11,15 +11,19 @@ type SmartLoader interface {
 	Watch(ctx context.Context, callback WatchCallback) error
 }
 
-type ValueLoader struct {
-	Conf *Conf
+func NewValueLoader(value interface{}) SmartLoader {
+	return &valueLoader{value: value}
 }
 
-func (vl *ValueLoader) Load(outPointer interface{}) error {
-	outPointer = vl.Conf
+type valueLoader struct {
+	value interface{}
+}
+
+func (vl *valueLoader) Load(outPointer interface{}) error {
+	outPointer = vl.value
 	return nil
 }
 
-func (vl *ValueLoader) Watch(ctx context.Context, callback WatchCallback) error {
-	return callback(vl.Conf)
+func (vl *valueLoader) Watch(ctx context.Context, callback WatchCallback) error {
+	return callback(vl.value)
 }

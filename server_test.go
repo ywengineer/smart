@@ -54,9 +54,9 @@ func TestServer(t *testing.T) {
 	// 2. register handler: RegisterModule
 	// 3. create a smart server
 	network, addr := "tcp", "127.0.0.1:12345"
-	srv, err := NewSmartServer(&loader.ValueLoader{
-		Conf: &loader.Conf{Network: network, Address: addr, Workers: 1, WorkerLoadBalance: "rr"},
-	},
+
+	srv, err := NewSmartServer(
+		loader.NewValueLoader(&loader.Conf{Network: network, Address: addr, Workers: 1, WorkerLoadBalance: "rr"}),
 		WithByteOrder(func() binary.ByteOrder {
 			return binary.LittleEndian
 		}),

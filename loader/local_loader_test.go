@@ -7,8 +7,8 @@ import (
 
 func TestLocalJSONLoader(t *testing.T) {
 	//
-	loader := &LocalLoader{
-		Path: "./conf.json",
+	loader := &localLoader{
+		path: "./conf.json",
 	}
 	var c = &Conf{}
 	if err := loader.Load(c); err != nil {
@@ -19,8 +19,8 @@ func TestLocalJSONLoader(t *testing.T) {
 }
 
 func TestLocalYamlLoader(t *testing.T) {
-	loader := &LocalLoader{
-		Path: "./conf.yaml",
+	loader := &localLoader{
+		path: "./conf.yaml",
 	}
 	var c = &Conf{}
 	if err := loader.Load(c); err != nil {
@@ -31,8 +31,8 @@ func TestLocalYamlLoader(t *testing.T) {
 }
 
 func TestUnknownLocalLoader(t *testing.T) {
-	loader := &LocalLoader{
-		Path: "./con.json",
+	loader := &localLoader{
+		path: "./con.json",
 	}
 	var c = &Conf{}
 	if err := loader.Load(c); err != nil {
@@ -43,8 +43,8 @@ func TestUnknownLocalLoader(t *testing.T) {
 }
 
 func TestNoSuffixLocalLoader(t *testing.T) {
-	loader := &LocalLoader{
-		Path: "/etc/hosts",
+	loader := &localLoader{
+		path: "/etc/hosts",
 	}
 	var c = &Conf{}
 	if err := loader.Load(c); err != nil {

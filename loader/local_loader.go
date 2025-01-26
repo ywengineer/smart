@@ -10,43 +10,47 @@ import (
 	"time"
 )
 
-type LocalLoader struct {
-	Path    string `json:"path"`
-	Decoder Decoder
+type localLoader struct {
+	path    string
+	decoder Decoder
 }
 
-func (ll *LocalLoader) Load(out interface{}) error {
+func NewLocalLoader(path string) SmartLoader {
+	return &localLoader{path: path}
+}
+
+func (ll *localLoader) Load(out interface{}) error {
 	if err := ll.check(); err != nil {
 		return err
 	}
-	if ll.Decoder == nil {
-		fs := ll.Path[strings.LastIndex(ll.Path, ".")+1:]
+	if ll.decoder == nil {
+		fs := ll.path[strings.LastIndex(ll.path, ".")+1:]
 		if strings.EqualFold(fs, "json") {
-			ll.Decoder = &jsonDecoder{}
+			ll.decoder = &jsonDecoder{}
 		} else if strings.EqualFold(fs, "yaml") || strings.EqualFold(fs, "yml") {
-			ll.Decoder = &yamlDecoder{}
+			ll.decoder = &yamlDecoder{}
 		} else {
-			return errors.Errorf("unsupported file : %s", ll.Path)
+			return errors.Errorf("unsupported file : %s", ll.path)
 		}
 	}
-	data, err := os.ReadFile(ll.Path)
+	data, err := os.ReadFile(ll.path)
 	if err != nil {
 		return err
 	}
-	return ll.Decoder.Unmarshal(data, out)
+	return ll.decoder.Unmarshal(data, out)
 }
 
-func (ll *LocalLoader) check() error {
-	if len(ll.Path) == 0 {
+func (ll *localLoader) check() error {
+	if len(ll.path) == 0 {
 		return errors.New("loader file path is empty")
 	}
-	if !ll.isFileExist(ll.Path) {
-		return errors.Errorf("loader file[%s] is not exists", ll.Path)
+	if !ll.isFileExist(ll.path) {
+		return errors.Errorf("loader file[%s] is not exists", ll.path)
 	}
 	return nil
 }
 
-func (ll *LocalLoader) Watch(ctx context.Context, callback WatchCallback) error {
+func (ll *localLoader) Watch(ctx context.Context, callback WatchCallback) error {
 	if err := ll.check(); err != nil {
 		return err
 	}
@@ -65,28 +69,28 @@ func (ll *LocalLoader) Watch(ctx context.Context, callback WatchCallback) error 
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					conf := &Conf{}
 					if ll.Load(conf) != nil {
-						log.Printf("[LocalLoader] file changed. local loader parse error: %v\n", err)
+						log.Printf("[localLoader] file changed. local loader parse error: %v\n", err)
 					} else {
 						_ = callback(conf)
 					}
 				}
 			case err = <-watcher.Errors:
-				log.Printf("[LocalLoader] local loader watcher stopped. encounter an error: %v\n", err)
+				log.Printf("[localLoader] local loader watcher stopped. encounter an error: %v\n", err)
 			case <-ctx.Done():
 				return
 			default:
 				if err = ctx.Err(); err != nil {
-					log.Printf("[LocalLoader] local loader watcher stopped. encounter an error: %v\n", err)
+					log.Printf("[localLoader] local loader watcher stopped. encounter an error: %v\n", err)
 					return
 				}
 				time.Sleep(time.Second * 5)
 			}
 		}
 	}()
-	return watcher.Add(ll.Path)
+	return watcher.Add(ll.path)
 }
 
-func (ll *LocalLoader) isFileExist(filename string) bool {
+func (ll *localLoader) isFileExist(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil || os.IsExist(err)
 }
