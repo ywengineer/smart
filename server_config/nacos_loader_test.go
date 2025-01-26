@@ -12,12 +12,14 @@ func TestNacosLoader(t *testing.T) {
 		"a7aabc24-17a7-4ac5-978f-6f933ce19dd4", "nacos", "nacos", "debug")
 	assert.Nil(t, err)
 	//
+	c := &Conf{}
 	loader := NewNacosLoader(nc, "DEFAULT_GROUP", "smart.gate.yaml", NewYamlDecoder())
-	c, err := loader.Load()
+	err = loader.Load(c)
 	assert.Nil(t, err)
 	t.Logf("%v", *c)
-	err = loader.Watch(context.Background(), func(conf *Conf) {
-		t.Logf("config change: %v", *conf)
+	err = loader.Watch(context.Background(), func(conf interface{}) error {
+		t.Logf("config change: %v", *(conf.(*Conf)))
+		return nil
 	})
 	assert.Nil(t, err)
 	<-utility.WatchQuitSignal()

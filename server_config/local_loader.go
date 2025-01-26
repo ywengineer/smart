@@ -15,9 +15,9 @@ type LocalLoader struct {
 	Decoder Decoder
 }
 
-func (ll *LocalLoader) Load() (*Conf, error) {
+func (ll *LocalLoader) Load(out interface{}) error {
 	if err := ll.check(); err != nil {
-		return nil, err
+		return err
 	}
 	if ll.Decoder == nil {
 		fs := ll.Path[strings.LastIndex(ll.Path, ".")+1:]
@@ -26,16 +26,14 @@ func (ll *LocalLoader) Load() (*Conf, error) {
 		} else if strings.EqualFold(fs, "yaml") || strings.EqualFold(fs, "yml") {
 			ll.Decoder = &yamlDecoder{}
 		} else {
-			return nil, errors.Errorf("unsupported file : %s", ll.Path)
+			return errors.Errorf("unsupported file : %s", ll.Path)
 		}
 	}
 	data, err := os.ReadFile(ll.Path)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	conf := &Conf{}
-	err = ll.Decoder.Unmarshal(data, conf)
-	return conf, err
+	return ll.Decoder.Unmarshal(data, out)
 }
 
 func (ll *LocalLoader) check() error {
@@ -48,7 +46,7 @@ func (ll *LocalLoader) check() error {
 	return nil
 }
 
-func (ll *LocalLoader) Watch(ctx context.Context, callback func(conf *Conf)) error {
+func (ll *LocalLoader) Watch(ctx context.Context, callback WatchCallback) error {
 	if err := ll.check(); err != nil {
 		return err
 	}
@@ -65,11 +63,11 @@ func (ll *LocalLoader) Watch(ctx context.Context, callback func(conf *Conf)) err
 					return
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					conf, err := ll.Load()
-					if err != nil || conf == nil {
+					var conf Conf
+					if ll.Load(&conf) != nil {
 						log.Printf("[LocalLoader] file changed. local loader parse error: %v\n", err)
 					} else {
-						callback(conf)
+						_ = callback(&conf)
 					}
 				}
 			case err = <-watcher.Errors:

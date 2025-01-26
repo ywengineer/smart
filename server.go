@@ -44,7 +44,7 @@ func NewSmartServer(loader server_config.SmartLoader, initializer ...ChannelInit
 		return nil, errors.New("initializer of channel can not be empty")
 	}
 	// load server_config
-	conf, err := loader.Load()
+	err := loader.Load(nil)
 	if err != nil || conf == nil {
 		return nil, errors.WithMessage(err, "load server server_config error")
 	} else {

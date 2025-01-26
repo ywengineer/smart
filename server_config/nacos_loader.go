@@ -61,18 +61,16 @@ func NewNacosClient(ipAddr string, port uint64, contextPath string,
 	)
 }
 
-func (nl *nacosLoader) Load() (*Conf, error) {
+func (nl *nacosLoader) Load(out interface{}) error {
 	if err := nl.check(); err != nil {
-		return nil, err
+		return err
 	}
 	// get server_config
 	content, err := nl.nc.GetConfig(vo.ConfigParam{Group: nl.group, DataId: nl.dataId})
 	if err != nil {
-		return nil, errors.WithMessage(err, "load server_config content from nacos error")
+		return errors.WithMessage(err, "load server_config content from nacos error")
 	}
-	conf := &Conf{}
-	err = nl.decoder.Unmarshal([]byte(content), conf)
-	return conf, err
+	return nl.decoder.Unmarshal([]byte(content), out)
 }
 
 func (nl *nacosLoader) check() error {
@@ -88,7 +86,7 @@ func (nl *nacosLoader) check() error {
 	return nil
 }
 
-func (nl *nacosLoader) Watch(ctx context.Context, callback func(conf *Conf)) error {
+func (nl *nacosLoader) Watch(ctx context.Context, callback WatchCallback) error {
 	if err := nl.check(); err != nil {
 		return err
 	}
@@ -101,7 +99,7 @@ func (nl *nacosLoader) Watch(ctx context.Context, callback func(conf *Conf)) err
 			if err != nil {
 				log.Printf("[nacosLoader] server_config changed. nacos loader parse error: %v\n", err)
 			} else {
-				callback(conf)
+				_ = callback(conf)
 			}
 		},
 	}
