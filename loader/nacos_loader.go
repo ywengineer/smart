@@ -1,4 +1,4 @@
-package server_config
+package loader
 
 import (
 	"context"
@@ -52,7 +52,7 @@ func NewNacosClient(ipAddr string, port uint64, contextPath string,
 		constant.WithPassword(password),
 		constant.WithLogLevel(logLevel),
 	)
-	// create server_config client
+	// create loader client
 	return clients.NewConfigClient(
 		vo.NacosClientParam{
 			ClientConfig:  &cc,
@@ -65,10 +65,10 @@ func (nl *nacosLoader) Load(out interface{}) error {
 	if err := nl.check(); err != nil {
 		return err
 	}
-	// get server_config
+	// get loader
 	content, err := nl.nc.GetConfig(vo.ConfigParam{Group: nl.group, DataId: nl.dataId})
 	if err != nil {
-		return errors.WithMessage(err, "load server_config content from nacos error")
+		return errors.WithMessage(err, "load loader content from nacos error")
 	}
 	return nl.decoder.Unmarshal([]byte(content), out)
 }
@@ -78,7 +78,7 @@ func (nl *nacosLoader) check() error {
 		return errors.New("nacos client have not been initialized.")
 	}
 	if nl.decoder == nil {
-		return errors.New("nil server_config decoder is not allowed")
+		return errors.New("nil loader decoder is not allowed")
 	}
 	if len(nl.group) == 0 || len(nl.dataId) == 0 {
 		return errors.New("empty dataId and group is not allowed")
@@ -97,7 +97,7 @@ func (nl *nacosLoader) Watch(ctx context.Context, callback WatchCallback) error 
 			conf := &Conf{}
 			err := nl.decoder.Unmarshal([]byte(data), conf)
 			if err != nil {
-				log.Printf("[nacosLoader] server_config changed. nacos loader parse error: %v\n", err)
+				log.Printf("[nacosLoader] loader changed. nacos loader parse error: %v\n", err)
 			} else {
 				_ = callback(conf)
 			}

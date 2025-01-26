@@ -1,4 +1,4 @@
-package server_config
+package loader
 
 import (
 	"context"
@@ -38,10 +38,10 @@ func (ll *LocalLoader) Load(out interface{}) error {
 
 func (ll *LocalLoader) check() error {
 	if len(ll.Path) == 0 {
-		return errors.New("server_config file path is empty")
+		return errors.New("loader file path is empty")
 	}
 	if !ll.isFileExist(ll.Path) {
-		return errors.Errorf("server_config file[%s] is not exists", ll.Path)
+		return errors.Errorf("loader file[%s] is not exists", ll.Path)
 	}
 	return nil
 }

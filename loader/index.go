@@ -1,4 +1,4 @@
-package server_config
+package loader
 
 import (
 	"github.com/bytedance/sonic"

@@ -1,6 +1,7 @@
-package server_config
+package loader
 
 import (
+	"github.com/bytedance/sonic"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ func TestLocalJSONLoader(t *testing.T) {
 	if err := loader.Load(c); err != nil {
 		t.Fatalf("%v", err)
 	} else {
-		t.Logf("%v", *c)
+		t.Log(sonic.MarshalString(c))
 	}
 }
 

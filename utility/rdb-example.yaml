@@ -1,0 +1,11 @@
+name: "" # mysql or postgres
+username: ""
+password: ""
+host: ""
+port: 0
+database: ""
+parameters: ""
+pool:
+  max-idle-con: 5
+  max-open-con: 50
+  max-life-time-minute: 10

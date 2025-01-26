@@ -7,7 +7,7 @@ import (
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
 	"github.com/ywengineer/smart/codec"
-	"github.com/ywengineer/smart/server_config"
+	"github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"net"
@@ -34,19 +34,19 @@ type smartServer struct {
 	channelCount   int32    // accept counter
 	initializers   []ChannelInitializer
 	workerManager  WorkerManager
-	conf           *server_config.Conf
-	confWatcher    func(ctx context.Context, callback func(conf *server_config.Conf)) error
-	onConfigChange func(conf server_config.Conf)
+	conf           *loader.Conf
+	confWatcher    func(ctx context.Context, callback func(conf *loader.Conf)) error
+	onConfigChange func(conf loader.Conf)
 }
 
-func NewSmartServer(loader server_config.SmartLoader, initializer ...ChannelInitializer) (*smartServer, error) {
+func NewSmartServer(loader loader.SmartLoader, initializer ...ChannelInitializer) (*smartServer, error) {
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}
-	// load server_config
+	// load loader
 	err := loader.Load(nil)
 	if err != nil || conf == nil {
-		return nil, errors.WithMessage(err, "load server server_config error")
+		return nil, errors.WithMessage(err, "load server loader error")
 	} else {
 		utility.DefaultLogger().Debug("new smart server with conf", zap.Any("conf", *conf))
 	}
@@ -94,7 +94,7 @@ func (s *smartServer) Serve() (context.Context, error) {
 		}
 	}()
 	// watch config
-	if err := s.confWatcher(s.ctx, func(conf *server_config.Conf) {
+	if err := s.confWatcher(s.ctx, func(conf *loader.Conf) {
 		utility.DefaultLogger().Debug("server config changed", zap.Any("old", *s.conf), zap.Any("new", *conf))
 		if s.onConfigChange != nil {
 			s.onConfigChange(*conf)
@@ -120,7 +120,7 @@ func (s *smartServer) Shutdown() error {
 	return s.eventLoop.Shutdown(s.ctx)
 }
 
-func (s *smartServer) SetOnConfigChange(callback func(conf server_config.Conf)) {
+func (s *smartServer) SetOnConfigChange(callback func(conf loader.Conf)) {
 	s.onConfigChange = callback
 }
 
