@@ -7,7 +7,7 @@ import (
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
 	"github.com/ywengineer/smart/codec"
-	"github.com/ywengineer/smart/loader"
+	sl "github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"net"
@@ -34,18 +34,18 @@ type smartServer struct {
 	channelCount   int32    // accept counter
 	initializers   []ChannelInitializer
 	workerManager  WorkerManager
-	conf           *loader.Conf
-	confWatcher    func(ctx context.Context, callback func(conf *loader.Conf)) error
-	onConfigChange func(conf loader.Conf)
+	conf           *sl.Conf
+	confWatcher    func(ctx context.Context, callback sl.WatchCallback) error
+	onConfigChange func(conf sl.Conf)
 }
 
-func NewSmartServer(loader loader.SmartLoader, initializer ...ChannelInitializer) (*smartServer, error) {
+func NewSmartServer(loader sl.SmartLoader, initializer ...ChannelInitializer) (*smartServer, error) {
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}
 	// load loader
-	err := loader.Load(nil)
-	if err != nil || conf == nil {
+	conf := &sl.Conf{}
+	if err := loader.Load(conf); err != nil {
 		return nil, errors.WithMessage(err, "load server loader error")
 	} else {
 		utility.DefaultLogger().Debug("new smart server with conf", zap.Any("conf", *conf))
@@ -94,12 +94,13 @@ func (s *smartServer) Serve() (context.Context, error) {
 		}
 	}()
 	// watch config
-	if err := s.confWatcher(s.ctx, func(conf *loader.Conf) {
-		utility.DefaultLogger().Debug("server config changed", zap.Any("old", *s.conf), zap.Any("new", *conf))
+	if err := s.confWatcher(s.ctx, func(conf interface{}) error {
+		utility.DefaultLogger().Debug("server config changed", zap.Any("old", *s.conf), zap.Any("new", *conf.(*sl.Conf)))
+		s.conf = conf.(*sl.Conf)
 		if s.onConfigChange != nil {
-			s.onConfigChange(*conf)
+			s.onConfigChange(*s.conf)
 		}
-		s.conf = conf
+		return nil
 	}); err != nil {
 		utility.DefaultLogger().Error("server config watcher start error", zap.Error(err))
 	} else {
@@ -120,7 +121,7 @@ func (s *smartServer) Shutdown() error {
 	return s.eventLoop.Shutdown(s.ctx)
 }
 
-func (s *smartServer) SetOnConfigChange(callback func(conf loader.Conf)) {
+func (s *smartServer) SetOnConfigChange(callback func(conf sl.Conf)) {
 	s.onConfigChange = callback
 }
 

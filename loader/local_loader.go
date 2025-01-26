@@ -63,11 +63,11 @@ func (ll *LocalLoader) Watch(ctx context.Context, callback WatchCallback) error 
 					return
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					var conf Conf
-					if ll.Load(&conf) != nil {
+					conf := &Conf{}
+					if ll.Load(conf) != nil {
 						log.Printf("[LocalLoader] file changed. local loader parse error: %v\n", err)
 					} else {
-						_ = callback(&conf)
+						_ = callback(conf)
 					}
 				}
 			case err = <-watcher.Errors:
