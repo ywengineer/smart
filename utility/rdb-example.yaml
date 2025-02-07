@@ -9,3 +9,4 @@ pool:
   max-idle-con: 5
   max-open-con: 50
   max-life-time-minute: 10
+cache: # schema://user:password@host:port/?db=0&node=host:port&node=host:port, schema: mem/redis. without cache if not set

@@ -10,6 +10,7 @@ type RdbProperties struct {
 	Database   string           `json:"database" yaml:"database"`
 	Parameters string           `json:"parameters" yaml:"parameters"`
 	Pool       DbPoolProperties `json:"pool" yaml:"pool"`
+	Cache      string           `json:"cache" yaml:"cache"`
 }
 
 type DbPoolProperties struct {

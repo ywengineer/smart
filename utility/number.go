@@ -3,6 +3,8 @@ package utility
 import (
 	"encoding/json"
 	"errors"
+	"go.uber.org/zap"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -51,4 +53,16 @@ func Int2String(n interface{}) (string, error) {
 	default:
 		return "", errors.New("detect an non-numeric type : " + t.String())
 	}
+}
+
+func QueryInt(query url.Values, key string) int {
+	v := query.Get(key)
+	if len(v) > 0 {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return n
+		} else {
+			DefaultLogger().Warn("get int value from url Query", zap.String("key", key), zap.String("value", v))
+		}
+	}
+	return 0
 }

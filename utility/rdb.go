@@ -2,17 +2,22 @@ package utility
 
 import (
 	"fmt"
+	"github.com/go-gorm/caches/v4"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"net/url"
+	"strings"
 	"time"
 )
 
 func NewRDB(driver RdbProperties) (*gorm.DB, error) {
 	var db *gorm.DB
 	var err error
+	var cachePlugin gorm.Plugin
+	//
 	if driver.Name == "mysql" {
 		db, err = NewMySQL(driver)
 	} else if driver.Name == "postgres" {
@@ -20,10 +25,31 @@ func NewRDB(driver RdbProperties) (*gorm.DB, error) {
 	} else {
 		db, err = nil, errors.New("not support driver: "+driver.Name)
 	}
-	if err == nil {
-		return initRbdConnPool(db, driver)
+	if err != nil {
+		return nil, err
+	} else if len(driver.Cache) > 0 { // cache
+		if strings.HasPrefix(driver.Cache, "mem://") {
+			if memProtocol, err := url.Parse(driver.Cache); err == nil {
+				cachePlugin = &caches.Caches{Conf: &caches.Config{
+					Cacher: (&memoryCacher{}).size(QueryInt(memProtocol.Query(), "size")),
+				}}
+			} else {
+				DefaultLogger().Error("rdb cache inactivate, because of create failed: " + driver.Cache)
+			}
+		} else if strings.HasPrefix(driver.Cache, "redis://") {
+			cachePlugin = &caches.Caches{Conf: &caches.Config{
+				Cacher: &redisCacher{rdb: NewRedis(driver.Cache)},
+			}}
+		} else {
+			DefaultLogger().Error("rdb not support this cache: " + driver.Cache)
+		}
 	}
-	return db, err
+	// cache plugin
+	if db != nil && cachePlugin != nil {
+		_ = db.Use(cachePlugin)
+	}
+	//
+	return initRbdConnPool(db, driver)
 }
 
 // NewMySQL create gorm.DB instance based on mysql database
