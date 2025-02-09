@@ -38,11 +38,12 @@ func TestServerWithNacos(t *testing.T) {
 	}
 	assert.Nil(t, err)
 	// 4. start smart server
-	ctx, err := srv.Serve()
+	ctx, err := srv.Serve(context.Background())
 	assert.Nil(t, err)
 	t.Log("smart nacos server was started.")
 	//
-	runClient(t, ctx, srv.conf.Network, srv.conf.Address, srv.initializers)
+	_srv := srv.(*defaultServer)
+	runClient(t, ctx, _srv.conf.Network, _srv.conf.Address, _srv.initializers)
 	//
 	_ = <-utility.WatchQuitSignal()
 	// 5. wait smart server shutdown
@@ -73,11 +74,12 @@ func TestServer(t *testing.T) {
 	}
 	assert.Nil(t, err)
 	// 4. start smart server
-	ctx, err := srv.Serve()
+	ctx, err := srv.Serve(context.Background())
 	assert.Nil(t, err)
 	t.Log("smart server was started.")
+	_srv := srv.(*defaultServer)
 	//
-	runClient(t, ctx, network, addr, srv.initializers)
+	runClient(t, ctx, network, addr, _srv.initializers)
 	//
 	_ = <-utility.WatchQuitSignal()
 	// 5. wait smart server shutdown

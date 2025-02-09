@@ -24,7 +24,16 @@ const (
 	stopped
 )
 
-type smartServer struct {
+// Server smart server interface
+type Server interface {
+	Serve(ctx context.Context) (context.Context, error)
+	Shutdown() error
+	SetOnConfigChange(callback func(conf sl.Conf))
+	GetChannel(id int) *SocketChannel
+	ConnCount() int32
+}
+
+type defaultServer struct {
 	lock           sync.Mutex
 	status         status
 	ctx            context.Context
@@ -39,7 +48,7 @@ type smartServer struct {
 	onConfigChange func(conf sl.Conf)
 }
 
-func NewSmartServer(loader sl.SmartLoader, initializer ...ChannelInitializer) (*smartServer, error) {
+func NewSmartServer(loader sl.SmartLoader, initializer ...ChannelInitializer) (Server, error) {
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}
@@ -51,7 +60,7 @@ func NewSmartServer(loader sl.SmartLoader, initializer ...ChannelInitializer) (*
 		utility.DefaultLogger().Debug("new smart server with conf", zap.Any("conf", *conf))
 	}
 	worker, _ := NewWorkerManager(utility.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
-	server := &smartServer{
+	server := &defaultServer{
 		status:        prepared,
 		workerManager: worker,
 		initializers:  initializer,
@@ -61,13 +70,13 @@ func NewSmartServer(loader sl.SmartLoader, initializer ...ChannelInitializer) (*
 	return server, nil
 }
 
-func (s *smartServer) Serve() (context.Context, error) {
+func (s *defaultServer) Serve(ctx context.Context) (context.Context, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if s.status != prepared {
 		return nil, errors.New("start smart server failed. maybe already started or can not start again")
 	}
-	s.ctx, s.shutdownHook = context.WithCancel(context.Background())
+	s.ctx, s.shutdownHook = context.WithCancel(ctx)
 	eventLoop, _ := netpoll.NewEventLoop(s.onConnRead, netpoll.WithOnPrepare(s.onConnPrepare), netpoll.WithOnConnect(s.onConnOpen))
 	s.eventLoop = eventLoop
 	s.status = running
@@ -109,7 +118,7 @@ func (s *smartServer) Serve() (context.Context, error) {
 	return s.ctx, nil
 }
 
-func (s *smartServer) Shutdown() error {
+func (s *defaultServer) Shutdown() error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if s.status != running {
@@ -121,15 +130,15 @@ func (s *smartServer) Shutdown() error {
 	return s.eventLoop.Shutdown(s.ctx)
 }
 
-func (s *smartServer) SetOnConfigChange(callback func(conf sl.Conf)) {
+func (s *defaultServer) SetOnConfigChange(callback func(conf sl.Conf)) {
 	s.onConfigChange = callback
 }
 
-func (s *smartServer) onConnPrepare(conn netpoll.Connection) context.Context {
+func (s *defaultServer) onConnPrepare(conn netpoll.Connection) context.Context {
 	return s.ctx
 }
 
-func (s *smartServer) onConnRead(ctx context.Context, conn netpoll.Connection) error {
+func (s *defaultServer) onConnRead(ctx context.Context, conn netpoll.Connection) error {
 	fd := conn.(netpoll.Conn).Fd()
 	// channel not registered
 	if channel, ok := s.channels.Load(fd); ok == false {
@@ -141,7 +150,7 @@ func (s *smartServer) onConnRead(ctx context.Context, conn netpoll.Connection) e
 	}
 }
 
-func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) context.Context {
+func (s *defaultServer) onConnOpen(ctx context.Context, conn netpoll.Connection) context.Context {
 	_ = conn.AddCloseCallback(s.onConnClosed)
 	channel := &SocketChannel{
 		ctx:  ctx,
@@ -168,7 +177,7 @@ func (s *smartServer) onConnOpen(ctx context.Context, conn netpoll.Connection) c
 	return s.ctx
 }
 
-func (s *smartServer) onConnClosed(conn netpoll.Connection) error {
+func (s *defaultServer) onConnClosed(conn netpoll.Connection) error {
 	fd := conn.(netpoll.Conn).Fd()
 	atomic.AddInt32(&s.channelCount, -1)
 	if ch, ok := s.channels.LoadAndDelete(fd); ok {
@@ -177,12 +186,12 @@ func (s *smartServer) onConnClosed(conn netpoll.Connection) error {
 	return nil
 }
 
-func (s *smartServer) ConnCount() int32 {
+func (s *defaultServer) ConnCount() int32 {
 	return atomic.LoadInt32(&s.channelCount)
 }
 
 // GetChannel by fd(id)
-func (s *smartServer) GetChannel(id int) *SocketChannel {
+func (s *defaultServer) GetChannel(id int) *SocketChannel {
 	if ch, ok := s.channels.Load(id); ok {
 		return ch.(*SocketChannel)
 	}
