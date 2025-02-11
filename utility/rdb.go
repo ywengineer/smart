@@ -13,7 +13,8 @@ import (
 	"time"
 )
 
-func NewRDB(driver RdbProperties) (*gorm.DB, error) {
+// NewRDB create rational database instance
+func NewRDB(driver RdbProperties, plugins ...gorm.Plugin) (*gorm.DB, error) {
 	var db *gorm.DB
 	var err error
 	var cachePlugin gorm.Plugin
@@ -44,9 +45,16 @@ func NewRDB(driver RdbProperties) (*gorm.DB, error) {
 			DefaultLogger().Error("rdb not support this cache: " + driver.Cache)
 		}
 	}
-	// cache plugin
-	if db != nil && cachePlugin != nil {
-		_ = db.Use(cachePlugin)
+	//
+	if db != nil {
+		if cachePlugin != nil { // // cache plugin
+			_ = db.Use(cachePlugin)
+		}
+		if plugins != nil && len(plugins) > 0 {
+			for _, plugin := range plugins {
+				_ = db.Use(plugin)
+			}
+		}
 	}
 	//
 	return initRbdConnPool(db, driver)
