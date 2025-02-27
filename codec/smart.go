@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/cloudwego/netpoll"
 	"github.com/ywengineer/smart/message"
+	"github.com/ywengineer/smart/pkg"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -73,7 +74,7 @@ func (c *smartCodec) Encode(i interface{}) ([]byte, error) {
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *smartCodec) Decode(reader netpoll.Reader, i interface{}) error {
+func (c *smartCodec) Decode(reader pkg.Reader, i interface{}) error {
 	dl := reader.Len()
 	// 消息结构(len(4) + protocol(2) + compress(1) + flags(1) + payload(len))
 	if dl < message.ProtocolMetaBytes {

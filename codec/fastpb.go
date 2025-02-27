@@ -3,7 +3,7 @@ package codec
 import (
 	"errors"
 	"github.com/cloudwego/fastpb"
-	"github.com/cloudwego/netpoll"
+	"github.com/ywengineer/smart/pkg"
 )
 
 var fpbc = &fastpbCodec{}
@@ -30,7 +30,7 @@ func (c *fastpbCodec) Encode(i interface{}) ([]byte, error) {
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *fastpbCodec) Decode(reader netpoll.Reader, i interface{}) error {
+func (c *fastpbCodec) Decode(reader pkg.Reader, i interface{}) error {
 	if v, ok := i.(fastpb.Reader); ok {
 		bytes, err := readAll(reader)
 		if err != nil {

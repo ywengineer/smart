@@ -2,8 +2,8 @@ package codec
 
 import (
 	"bytes"
-	"github.com/cloudwego/netpoll"
 	"github.com/vmihailenco/msgpack/v5"
+	"github.com/ywengineer/smart/pkg"
 )
 
 var msgpackc = &msgpackCodec{}
@@ -29,7 +29,7 @@ func (c *msgpackCodec) Encode(i interface{}) ([]byte, error) {
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *msgpackCodec) Decode(reader netpoll.Reader, i interface{}) error {
+func (c *msgpackCodec) Decode(reader pkg.Reader, i interface{}) error {
 	if buf, err := readAll(reader); err != nil {
 		return err
 	} else {

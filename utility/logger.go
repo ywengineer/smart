@@ -14,6 +14,10 @@ func SetLogLevel(lv zapcore.Level) {
 	srvLogger = srvLogger.WithOptions(zap.IncreaseLevel(lv))
 }
 
+func GetLogLevel() zapcore.Level {
+	return srvLogger.Level()
+}
+
 func DefaultLogger() *zap.Logger {
 	return srvLogger
 }

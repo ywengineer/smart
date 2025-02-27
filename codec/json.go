@@ -3,7 +3,7 @@ package codec
 import (
 	"github.com/bytedance/sonic"
 	"github.com/bytedance/sonic/decoder"
-	"github.com/cloudwego/netpoll"
+	"github.com/ywengineer/smart/pkg"
 )
 
 var jsonc = &jsonCodec{}
@@ -25,7 +25,7 @@ func (c *jsonCodec) Encode(i interface{}) ([]byte, error) {
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *jsonCodec) Decode(reader netpoll.Reader, i interface{}) error {
+func (c *jsonCodec) Decode(reader pkg.Reader, i interface{}) error {
 	if bytes, e := readAll(reader); e != nil {
 		return e
 	} else {

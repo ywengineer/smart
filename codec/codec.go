@@ -2,7 +2,7 @@ package codec
 
 import (
 	"fmt"
-	"github.com/cloudwego/netpoll"
+	"github.com/ywengineer/smart/pkg"
 	"reflect"
 )
 
@@ -16,14 +16,14 @@ func NewByteCodec() Codec {
 	return &byteCodec{}
 }
 
-func readAll(reader netpoll.Reader) ([]byte, error) {
+func readAll(reader pkg.Reader) ([]byte, error) {
 	return reader.ReadBinary(reader.Len())
 }
 
 // Codec defines the interface that decode/encode payload.
 type Codec interface {
 	Encode(i interface{}) ([]byte, error)
-	Decode(reader netpoll.Reader, i interface{}) error
+	Decode(reader pkg.Reader, i interface{}) error
 }
 
 // byteCodec uses raw slice pf bytes and don't encode/decode.
@@ -42,7 +42,7 @@ func (c *byteCodec) Encode(i interface{}) ([]byte, error) {
 }
 
 // Decode returns raw slice of bytes.
-func (c *byteCodec) Decode(reader netpoll.Reader, i interface{}) error {
+func (c *byteCodec) Decode(reader pkg.Reader, i interface{}) error {
 	if byes, err := readAll(reader); err != nil {
 		return err
 	} else {

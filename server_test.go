@@ -50,13 +50,13 @@ func TestServerWithNacos(t *testing.T) {
 	t.Logf("smart nacos server was stopped. %v", srv.Shutdown())
 }
 
-func TestServer(t *testing.T) {
+func TestGNetServer(t *testing.T) {
 	// 1. load config: config.LoadConfig()
 	// 2. register handler: RegisterModule
 	// 3. create a smart server
 	network, addr := "tcp", "127.0.0.1:12345"
 
-	srv, err := NewSmartServer(
+	srv, err := NewGNetServer(
 		loader.NewValueLoader(&loader.Conf{Network: network, Address: addr, Workers: 1, WorkerLoadBalance: "rr"}),
 		WithByteOrder(func() binary.ByteOrder {
 			return binary.LittleEndian
@@ -77,7 +77,7 @@ func TestServer(t *testing.T) {
 	ctx, err := srv.Serve(context.Background())
 	assert.Nil(t, err)
 	t.Log("smart server was started.")
-	_srv := srv.(*defaultServer)
+	_srv := srv.(*gnetServer)
 	//
 	runClient(t, ctx, network, addr, _srv.initializers)
 	//

@@ -3,6 +3,7 @@ package smart
 import (
 	"context"
 	"github.com/cloudwego/netpoll"
+	"github.com/ywengineer/smart/pkg"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"strconv"
@@ -31,7 +32,7 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 	channel := &SocketChannel{
 		ctx:  ctx,
 		fd:   conn.(netpoll.Conn).Fd(),
-		conn: conn,
+		conn: pkg.NetNetpollConn(conn),
 		worker: NewSingleWorker("smart-client-"+scId, func(ctx context.Context, i interface{}) {
 			utility.DefaultLogger().Error("client worker panic occurred", zap.String("smart-client", scId), zap.Any("err", i))
 		}),

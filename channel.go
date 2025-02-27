@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"github.com/cloudwego/netpoll"
 	"github.com/ywengineer/smart/codec"
 	"github.com/ywengineer/smart/message"
+	"github.com/ywengineer/smart/pkg"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"sync"
@@ -15,7 +15,7 @@ import (
 type SocketChannel struct {
 	ctx          context.Context
 	fd           int
-	conn         netpoll.Connection
+	conn         pkg.Conn
 	codec        codec.Codec
 	byteOrder    binary.ByteOrder
 	worker       Worker

@@ -2,7 +2,7 @@ package codec
 
 import (
 	"fmt"
-	"github.com/cloudwego/netpoll"
+	"github.com/ywengineer/smart/pkg"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -28,7 +28,7 @@ func (c *protoCodec) Encode(i interface{}) ([]byte, error) {
 }
 
 // Decode decodes an object from slice of bytes.
-func (c *protoCodec) Decode(reader netpoll.Reader, i interface{}) error {
+func (c *protoCodec) Decode(reader pkg.Reader, i interface{}) error {
 	if m, ok := i.(proto.Message); ok {
 		bytes, e := readAll(reader)
 		if e != nil {

@@ -2,6 +2,7 @@ package loader
 
 import (
 	"context"
+	"reflect"
 )
 
 type WatchCallback func(c interface{}) error
@@ -20,7 +21,8 @@ type valueLoader struct {
 }
 
 func (vl *valueLoader) Load(outPointer interface{}) error {
-	outPointer = vl.value
+	reflect.ValueOf(outPointer).Elem().Set(reflect.ValueOf(vl.value).Elem())
+	//reflect.ValueOf(outPointer).Set(reflect.ValueOf(vl.value))
 	return nil
 }
 
