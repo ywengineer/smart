@@ -58,8 +58,6 @@ func (s *gnetServer) OnTraffic(c gnet.Conn) (action gnet.Action) {
 func (s *gnetServer) onSpin(ctx context.Context) error {
 	return gnet.Run(s, s.conf.Network+"://"+s.conf.Address,
 		gnet.WithMulticore(true),
-		gnet.WithReusePort(true),
-		gnet.WithReuseAddr(true),
 		gnet.WithTCPNoDelay(gnet.TCPNoDelay),
 		gnet.WithLogPath("./gnet.log"),
 		gnet.WithLogLevel(utility.GetLogLevel()),
