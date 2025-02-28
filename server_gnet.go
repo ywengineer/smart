@@ -9,6 +9,7 @@ import (
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"sync/atomic"
+	"time"
 )
 
 type gnetServer struct {
@@ -63,6 +64,7 @@ func (s *gnetServer) onSpin(ctx context.Context) error {
 		gnet.WithLogPath("./gnet.log"),
 		gnet.WithLogLevel(utility.GetLogLevel()),
 		gnet.WithSocketRecvBuffer(1*1024*1024),
+		gnet.WithTCPKeepAlive(time.Minute), // keep alive
 	)
 }
 
