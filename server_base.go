@@ -14,6 +14,7 @@ import (
 )
 
 type baseServer struct {
+	holder         serverCoreEventHolder
 	lock           sync.Mutex
 	status         status
 	channels       sync.Map // key=fd, value=connection
@@ -41,8 +42,12 @@ func (s *baseServer) ticker() {
 			timer.Stop()
 		}
 		if p := recover(); p != nil {
-			utility.DefaultLogger().Error("panic on server tick, restart tick.", zap.Any("recover", p))
-			go s.ticker()
+			if s.status == running {
+				utility.DefaultLogger().Error("panic on server tick, restart it.", zap.Any("recover", p))
+				go s.ticker()
+			} else {
+				utility.DefaultLogger().Error("panic on server tick", zap.Any("recover", p))
+			}
 		}
 	}()
 	for {
@@ -54,7 +59,7 @@ func (s *baseServer) ticker() {
 		}
 		select {
 		case <-s.ctx.Done():
-			return
+			break
 		case <-timer.C:
 		}
 	}
@@ -97,14 +102,6 @@ func (s *baseServer) onChannelOpen(channel *SocketChannel) {
 	channel.onOpen()
 }
 
-func (s *baseServer) onSpin(ctx context.Context) error {
-	return nil
-}
-
-func (s *baseServer) onShutdown() error {
-	return nil
-}
-
 func (s *baseServer) ConnCount() int32 {
 	return atomic.LoadInt32(&s.channelCount)
 }
@@ -134,7 +131,7 @@ func (s *baseServer) Shutdown() error {
 	// can not start again.
 	s.status = stopped
 	s.shutdownHook()
-	return s.onShutdown()
+	return s.holder.onShutdown()
 }
 
 func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
@@ -151,9 +148,9 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 	// start listen loop ...
 	go func() {
 		//
-		utility.DefaultLogger().Info("serve run at", zap.Any("address", s.conf.Network+s.conf.Address))
+		utility.DefaultLogger().Info("serve run at", zap.Any("address", s.conf.Network+"://"+s.conf.Address))
 		//
-		if err := s.onSpin(ctx); err != nil {
+		if err := s.holder.onSpin(ctx); err != nil {
 			utility.DefaultLogger().Panic("serve listener error", zap.Error(err))
 			// start failed or serve quit
 			_ = s.Shutdown()

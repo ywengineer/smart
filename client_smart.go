@@ -24,7 +24,7 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 	conn, err := dialer.DialConnection(network, addr, time.Second)
 	//
 	if err != nil {
-		utility.DefaultLogger().Panic("connect to smart server failed", zap.String("server", network+addr), zap.Error(err))
+		utility.DefaultLogger().Panic("connect to smart server failed", zap.String("server", network+"://"+addr), zap.Error(err))
 		return nil
 	}
 	//------------------------------------------------------------------------------------

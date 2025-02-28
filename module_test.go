@@ -38,18 +38,25 @@ func (m *TestModule) FindFriend1002(ctx context.Context, channel *SocketChannel,
 	utility.DefaultLogger().Info("FindFriend1002 invoked", zap.Any("req", *req))
 }
 
-func (m *TestModule) UseItem1003(ctx context.Context, channel *SocketChannel, req *Req) {
+func (m *TestModule) UseItem1003(ctx context.Context, channel *SocketChannel, req *Req) *message.ProtocolMessage {
 	utility.DefaultLogger().Info("UseItem1003 invoked", zap.Any("req", *req))
-}
-
-func (m *TestModule) StartFight1004(ctx context.Context, channel *SocketChannel, req *Req) *message.ProtocolMessage {
-	utility.DefaultLogger().Info("StartFight1004 invoked", zap.Any("req", *req))
 	return &message.ProtocolMessage{
 		Seq:     1,
 		Route:   1005,
 		Header:  map[string]string{},
 		Codec:   message.Codec_JSON,
-		Payload: []byte(`{"ping":1005, "extra": "from server"}`),
+		Payload: []byte(`{"pong":1005, "extra": "from server: 1003"}`),
+	}
+}
+
+func (m *TestModule) StartFight1004(ctx context.Context, channel *SocketChannel, req *Req) *message.ProtocolMessage {
+	utility.DefaultLogger().Info("StartFight1004 invoked", zap.Any("req", *req))
+	return &message.ProtocolMessage{
+		Seq:     2,
+		Route:   1005,
+		Header:  map[string]string{},
+		Codec:   message.Codec_JSON,
+		Payload: []byte(`{"pong":1005, "extra": "from server: 1004"}`),
 	}
 }
 

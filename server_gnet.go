@@ -13,7 +13,7 @@ import (
 )
 
 type gnetServer struct {
-	baseServer
+	*baseServer
 	gnet.BuiltinEventEngine
 	eng          gnet.Engine
 	disconnected int32

@@ -11,6 +11,7 @@ require (
 	github.com/go-gorm/caches/v4 v4.0.5
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/nacos-group/nacos-sdk-go/v2 v2.2.7
+	github.com/panjf2000/gnet/v2 v2.7.2
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/stretchr/testify v1.10.0
@@ -60,7 +61,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/panjf2000/ants/v2 v2.11.1 // indirect
-	github.com/panjf2000/gnet/v2 v2.7.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.2 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect

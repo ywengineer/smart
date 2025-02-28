@@ -86,51 +86,52 @@ func (h *SocketChannel) onClose() {
 }
 
 func (h *SocketChannel) onMessageRead(ctx context.Context) error {
-	msg := protocolMessagePool.Get()
-	err := h.codec.Decode(h.conn.Reader(), msg)
-	// parameter type not match *message.ProtocolMessage
-	// or pkg is too big
-	if errors.Is(err, codec.ErrParamMessage) || errors.Is(err, codec.ErrTooBig) {
-		_ = h.Close()
-		return err
-	} else if errors.Is(err, codec.ErrPkgNotFull) { // pkg not full, skip
-		return nil
-	} else { // decode success
-		h.LaterRun(func(msg *message.ProtocolMessage) func() {
-			return func() {
-				defer protocolMessagePool.Put(msg)
-				//
-				ctx = context.WithValue(ctx, CtxKeyFromClient, h.GetFd())
-				ctx = context.WithValue(ctx, CtxKeySeq, msg.GetSeq())
-				ctx = context.WithValue(ctx, CtxKeyHeader, msg.GetHeader())
-				//
-				if len(h.interceptors) > 0 {
-					for _, handler := range h.interceptors {
-						if err := handler.BeforeInvoke(ctx, h, msg); err != nil {
-							return
+	for {
+		msg := protocolMessagePool.Get()
+		err := h.codec.Decode(h.conn.Reader(), msg)
+		// parameter type not match *message.ProtocolMessage
+		// or pkg is too big
+		if errors.Is(err, codec.ErrParamMessage) || errors.Is(err, codec.ErrTooBig) {
+			_ = h.Close()
+			return err
+		} else if errors.Is(err, codec.ErrPkgNotFull) { // pkg not full, skip
+			return nil
+		} else { // decode success
+			h.LaterRun(func(msg *message.ProtocolMessage) func() {
+				return func() {
+					defer protocolMessagePool.Put(msg)
+					//
+					ctx = context.WithValue(ctx, CtxKeyFromClient, h.GetFd())
+					ctx = context.WithValue(ctx, CtxKeySeq, msg.GetSeq())
+					ctx = context.WithValue(ctx, CtxKeyHeader, msg.GetHeader())
+					//
+					if len(h.interceptors) > 0 {
+						for _, handler := range h.interceptors {
+							if err := handler.BeforeInvoke(ctx, h, msg); err != nil {
+								return
+							}
+						}
+					}
+					//
+					if len(h.msgHandlers) > 0 {
+						for _, handler := range h.msgHandlers {
+							if err := handler.OnMessage(ctx, h, msg); err != nil {
+								return
+							}
+						}
+					}
+					//
+					if len(h.interceptors) > 0 {
+						for deep := len(h.interceptors) - 1; deep >= 0; deep-- {
+							if err := h.interceptors[deep].AfterInvoke(ctx, h, msg); err != nil {
+								return
+							}
 						}
 					}
 				}
-				//
-				if len(h.msgHandlers) > 0 {
-					for _, handler := range h.msgHandlers {
-						if err := handler.OnMessage(ctx, h, msg); err != nil {
-							return
-						}
-					}
-				}
-				//
-				if len(h.interceptors) > 0 {
-					for deep := len(h.interceptors) - 1; deep >= 0; deep-- {
-						if err := h.interceptors[deep].AfterInvoke(ctx, h, msg); err != nil {
-							return
-						}
-					}
-				}
-			}
-		}(msg.(*message.ProtocolMessage)))
-	} //
-	return nil
+			}(msg.(*message.ProtocolMessage)))
+		} //
+	}
 }
 
 var protocolMessagePool = &sync.Pool{

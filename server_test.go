@@ -75,7 +75,6 @@ func TestGNetServer(t *testing.T) {
 	assert.Nil(t, err)
 	//
 	srv.SetOnTick(func(ctx context.Context) time.Duration {
-		utility.DefaultLogger().Info("ON SERVER tick")
 		return time.Second
 	})
 	// 4. start smart server
@@ -87,8 +86,10 @@ func TestGNetServer(t *testing.T) {
 	runClient(t, ctx, network, addr, _srv.initializers)
 	//
 	_ = <-utility.WatchQuitSignal()
+	t.Log("smart server will be stop.")
+	err = srv.Shutdown()
 	// 5. wait smart server shutdown
-	t.Logf("smart server was stopped. %v", srv.Shutdown())
+	t.Logf("smart server was stopped. %v", err)
 }
 
 func runClient(t *testing.T, ctx context.Context, network, addr string, initializers []ChannelInitializer) {

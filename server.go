@@ -23,6 +23,11 @@ const (
 	stopped
 )
 
+type serverCoreEventHolder interface {
+	onSpin(ctx context.Context) error
+	onShutdown() error
+}
+
 // Server smart server interface
 type Server interface {
 	Serve(ctx context.Context) (context.Context, error)
@@ -34,7 +39,7 @@ type Server interface {
 }
 
 type defaultServer struct {
-	baseServer
+	*baseServer
 	eventLoop netpoll.EventLoop
 }
 
@@ -51,26 +56,30 @@ func _newServer(loader sl.SmartLoader, useGNet bool, initializer ...ChannelIniti
 	}
 	worker, _ := NewWorkerManager(utility.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
 	if useGNet {
-		return &gnetServer{
-			baseServer: baseServer{
+		srv := &gnetServer{
+			baseServer: &baseServer{
 				status:        prepared,
 				workerManager: worker,
 				initializers:  initializer,
 				conf:          conf,
 				confWatcher:   loader.Watch,
 			},
-		}, nil
+		}
+		srv.baseServer.holder = srv
+		return srv, nil
+	} else {
+		srv := &defaultServer{
+			baseServer: &baseServer{
+				status:        prepared,
+				workerManager: worker,
+				initializers:  initializer,
+				conf:          conf,
+				confWatcher:   loader.Watch,
+			},
+		}
+		srv.baseServer.holder = srv
+		return srv, nil
 	}
-	// default
-	return &defaultServer{
-		baseServer: baseServer{
-			status:        prepared,
-			workerManager: worker,
-			initializers:  initializer,
-			conf:          conf,
-			confWatcher:   loader.Watch,
-		},
-	}, nil
 }
 
 func NewGNetServer(loader sl.SmartLoader, initializer ...ChannelInitializer) (Server, error) {
