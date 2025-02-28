@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 type baseServer struct {
@@ -24,6 +25,39 @@ type baseServer struct {
 	onConfigChange func(conf sl.Conf)
 	ctx            context.Context
 	shutdownHook   context.CancelFunc
+	onTick         func(ctx context.Context) time.Duration
+}
+
+func (s *baseServer) ticker() {
+	if s.onTick == nil {
+		return
+	}
+	var (
+		delay time.Duration
+		timer *time.Timer
+	)
+	defer func() {
+		if timer != nil {
+			timer.Stop()
+		}
+		if p := recover(); p != nil {
+			utility.DefaultLogger().Error("panic on server tick, restart tick.", zap.Any("recover", p))
+			go s.ticker()
+		}
+	}()
+	for {
+		delay = s.onTick(s.ctx)
+		if timer == nil {
+			timer = time.NewTimer(delay)
+		} else {
+			timer.Reset(delay)
+		}
+		select {
+		case <-s.ctx.Done():
+			return
+		case <-timer.C:
+		}
+	}
 }
 
 func (s *baseServer) onChannelRead(ctx context.Context, fd int) error {
@@ -87,6 +121,10 @@ func (s *baseServer) SetOnConfigChange(callback func(conf sl.Conf)) {
 	s.onConfigChange = callback
 }
 
+func (s *baseServer) SetOnTick(tick func(ctx context.Context) time.Duration) {
+	s.onTick = tick
+}
+
 func (s *baseServer) Shutdown() error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
@@ -121,6 +159,8 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 			_ = s.Shutdown()
 		}
 	}()
+	// tick
+	go s.ticker()
 	// watch config
 	if err := s.confWatcher(s.ctx, func(conf interface{}) error {
 		utility.DefaultLogger().Debug("server config changed", zap.Any("old", *s.conf), zap.Any("new", *conf.(*sl.Conf)))

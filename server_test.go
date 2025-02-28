@@ -73,6 +73,11 @@ func TestGNetServer(t *testing.T) {
 		t.FailNow()
 	}
 	assert.Nil(t, err)
+	//
+	srv.SetOnTick(func(ctx context.Context) time.Duration {
+		utility.DefaultLogger().Info("ON SERVER tick")
+		return time.Second
+	})
 	// 4. start smart server
 	ctx, err := srv.Serve(context.Background())
 	assert.Nil(t, err)

@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 	"net"
 	"runtime"
+	"time"
 )
 
 var ErrNotRegisteredChannel = errors.New("registered channel, close it.")
@@ -26,9 +27,10 @@ const (
 type Server interface {
 	Serve(ctx context.Context) (context.Context, error)
 	Shutdown() error
-	SetOnConfigChange(callback func(conf sl.Conf))
-	GetChannel(id int) *SocketChannel
 	ConnCount() int32
+	GetChannel(id int) *SocketChannel
+	SetOnConfigChange(callback func(conf sl.Conf))
+	SetOnTick(tick func(ctx context.Context) time.Duration)
 }
 
 type defaultServer struct {
