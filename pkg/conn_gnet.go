@@ -18,6 +18,10 @@ type gnetConn struct {
 	r    Reader
 }
 
+func (c *gnetConn) Fd() int {
+	return c.conn.Fd()
+}
+
 func (c *gnetConn) Reader() Reader {
 	return c.r
 }

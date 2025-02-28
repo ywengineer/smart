@@ -78,6 +78,7 @@ func (h *SocketChannel) onOpen() {
 func (h *SocketChannel) onClose() {
 	if len(h.handlers) > 0 {
 		h.LaterRun(func() {
+			defer channelPool.Put(h)
 			for _, handler := range h.handlers {
 				handler.OnClose(h)
 			}
@@ -85,7 +86,7 @@ func (h *SocketChannel) onClose() {
 	}
 }
 
-func (h *SocketChannel) onMessageRead(ctx context.Context) error {
+func (h *SocketChannel) onMessageRead() error {
 	for {
 		msg := protocolMessagePool.Get()
 		err := h.codec.Decode(h.conn.Reader(), msg)
@@ -101,8 +102,7 @@ func (h *SocketChannel) onMessageRead(ctx context.Context) error {
 				return func() {
 					defer protocolMessagePool.Put(msg)
 					//
-					ctx = context.WithValue(ctx, CtxKeyFromClient, h.GetFd())
-					ctx = context.WithValue(ctx, CtxKeySeq, msg.GetSeq())
+					ctx := context.WithValue(h.ctx, CtxKeySeq, msg.GetSeq())
 					ctx = context.WithValue(ctx, CtxKeyHeader, msg.GetHeader())
 					//
 					if len(h.interceptors) > 0 {
@@ -137,5 +137,11 @@ func (h *SocketChannel) onMessageRead(ctx context.Context) error {
 var protocolMessagePool = &sync.Pool{
 	New: func() interface{} {
 		return &message.ProtocolMessage{}
+	},
+}
+
+var channelPool = &sync.Pool{
+	New: func() interface{} {
+		return &SocketChannel{}
 	},
 }

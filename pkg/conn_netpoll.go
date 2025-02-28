@@ -10,6 +10,10 @@ type netpollConn struct {
 	conn netpoll.Connection
 }
 
+func (c *netpollConn) Fd() int {
+	return c.conn.(netpoll.Conn).Fd()
+}
+
 func (c *netpollConn) Reader() Reader {
 	return c.conn.Reader()
 }

@@ -10,4 +10,6 @@ type Conn interface {
 	Writer() Writer
 
 	Close() error
+
+	Fd() int
 }

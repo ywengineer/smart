@@ -115,9 +115,9 @@ func (s *defaultServer) onConnPrepare(conn netpoll.Connection) context.Context {
 	return s.ctx
 }
 
-func (s *defaultServer) onConnRead(ctx context.Context, conn netpoll.Connection) error {
+func (s *defaultServer) onConnRead(_ context.Context, conn netpoll.Connection) error {
 	fd := conn.(netpoll.Conn).Fd()
-	if err := s.onChannelRead(ctx, fd); err != nil {
+	if err := s.onChannelRead(fd); err != nil {
 		if errors.Is(err, ErrNotRegisteredChannel) {
 			utility.DefaultLogger().Error("not registered channel.", zap.Int("fd", fd))
 			_ = conn.Close()
@@ -127,14 +127,9 @@ func (s *defaultServer) onConnRead(ctx context.Context, conn netpoll.Connection)
 	return nil
 }
 
-func (s *defaultServer) onConnOpen(ctx context.Context, conn netpoll.Connection) context.Context {
+func (s *defaultServer) onConnOpen(_ context.Context, conn netpoll.Connection) context.Context {
 	_ = conn.AddCloseCallback(s.onConnClosed)
-	channel := &SocketChannel{
-		ctx:  ctx,
-		fd:   conn.(netpoll.Conn).Fd(),
-		conn: pkg.NetNetpollConn(conn),
-	}
-	s.onChannelOpen(channel)
+	s.onChannelOpen(pkg.NetNetpollConn(conn))
 	return s.ctx
 }
 

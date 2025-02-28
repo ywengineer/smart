@@ -26,12 +26,7 @@ func (s *gnetServer) OnBoot(eng gnet.Engine) (action gnet.Action) {
 }
 
 func (s *gnetServer) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
-	channel := &SocketChannel{
-		ctx:  s.ctx,
-		fd:   c.Fd(),
-		conn: pkg.NetGNetConn(c),
-	}
-	s.onChannelOpen(channel)
+	s.onChannelOpen(pkg.NetGNetConn(c))
 	return
 }
 
@@ -46,7 +41,7 @@ func (s *gnetServer) OnClose(c gnet.Conn, err error) (action gnet.Action) {
 
 func (s *gnetServer) OnTraffic(c gnet.Conn) (action gnet.Action) {
 	fd := c.Fd()
-	if err := s.onChannelRead(s.ctx, fd); err != nil {
+	if err := s.onChannelRead(fd); err != nil {
 		if errors.Is(err, ErrNotRegisteredChannel) {
 			utility.DefaultLogger().Error("not registered channel.", zap.Int("fd", fd))
 			action = gnet.Close

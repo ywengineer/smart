@@ -30,7 +30,7 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 	//------------------------------------------------------------------------------------
 	scId := strconv.FormatUint(atomic.AddUint64(&seqSmartClient, 1), 10)
 	channel := &SocketChannel{
-		ctx:  ctx,
+		ctx:  context.WithValue(ctx, CtxKeyFromClient, conn.(netpoll.Conn).Fd()),
 		fd:   conn.(netpoll.Conn).Fd(),
 		conn: pkg.NetNetpollConn(conn),
 		worker: NewSingleWorker("smart-client-"+scId, func(ctx context.Context, i interface{}) {
@@ -42,7 +42,7 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 	}
 	//------------------------------------------------------------------------------------
 	_ = conn.SetOnRequest(func(ctx context.Context, connection netpoll.Connection) error {
-		return channel.onMessageRead(ctx)
+		return channel.onMessageRead()
 	})
 	_ = conn.AddCloseCallback(func(connection netpoll.Connection) error {
 		channel.onClose()

@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ywengineer/smart/codec"
 	sl "github.com/ywengineer/smart/loader"
+	"github.com/ywengineer/smart/pkg"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"sync"
@@ -65,12 +66,12 @@ func (s *baseServer) ticker() {
 	}
 }
 
-func (s *baseServer) onChannelRead(ctx context.Context, fd int) error {
+func (s *baseServer) onChannelRead(fd int) error {
 	// channel not registered
 	if channel, ok := s.channels.Load(fd); ok == false {
 		return ErrNotRegisteredChannel
 	} else { // registered
-		return channel.(*SocketChannel).onMessageRead(ctx)
+		return channel.(*SocketChannel).onMessageRead()
 	}
 }
 
@@ -82,7 +83,10 @@ func (s *baseServer) onChannelClosed(fd int) error {
 	return nil
 }
 
-func (s *baseServer) onChannelOpen(channel *SocketChannel) {
+func (s *baseServer) onChannelOpen(conn pkg.Conn) {
+	channel := channelPool.Get().(*SocketChannel)
+	channel.ctx = context.WithValue(s.ctx, CtxKeyFromClient, conn.Fd())
+	channel.conn, channel.fd = conn, conn.Fd()
 	channel.worker = s.workerManager.Pick(channel.fd)
 	for _, initializer := range s.initializers {
 		initializer(channel)
@@ -150,7 +154,7 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 		//
 		utility.DefaultLogger().Info("serve run at", zap.Any("address", s.conf.Network+"://"+s.conf.Address))
 		//
-		if err := s.holder.onSpin(ctx); err != nil {
+		if err := s.holder.onSpin(s.ctx); err != nil {
 			utility.DefaultLogger().Panic("serve listener error", zap.Error(err))
 			// start failed or serve quit
 			_ = s.Shutdown()
