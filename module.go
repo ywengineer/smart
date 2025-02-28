@@ -37,12 +37,12 @@ func RegisterModule(module SmartModule) error {
 		}
 		// context.Context
 		in0 := mSignature.In(0)
-		// *SocketChannel
+		// Channel
 		in1 := mSignature.In(1)
 		// error
 		in2 := mSignature.In(2)
 		if in0.Kind() != reflect.Interface || in0 != TypeContext ||
-			in1.Kind() != reflect.Ptr || in1 != TypeSocketChannel ||
+			in1.Kind() != reflect.Interface || in1 != TypeSocketChannel ||
 			in2.Kind() != reflect.Ptr {
 			return createMethodSignatureError(mName)
 		}
@@ -68,5 +68,5 @@ func RegisterModule(module SmartModule) error {
 }
 
 func createMethodSignatureError(mName string) error {
-	return fmt.Errorf("handler signature must be %s(context.Context, *SocketChannel, *Any) [*ResponseType]", mName)
+	return fmt.Errorf("handler signature must be %s(context.Context, Channel, *Any) [*ResponseType]", mName)
 }

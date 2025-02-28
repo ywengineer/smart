@@ -13,11 +13,11 @@ import (
 
 var seqSmartClient uint64 = 1
 
-func NewAutoCloseSmartClient(ctx context.Context, network, addr string, initializers []ChannelInitializer) *SocketChannel {
+func NewAutoCloseSmartClient(ctx context.Context, network, addr string, initializers []ChannelInitializer) Channel {
 	return NewSmartClient(ctx, network, addr, initializers, true)
 }
 
-func NewSmartClient(ctx context.Context, network, addr string, initializers []ChannelInitializer, autoClose bool) *SocketChannel {
+func NewSmartClient(ctx context.Context, network, addr string, initializers []ChannelInitializer, autoClose bool) Channel {
 	//
 	dialer := netpoll.NewDialer()
 	//
@@ -29,7 +29,7 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 	}
 	//------------------------------------------------------------------------------------
 	scId := strconv.FormatUint(atomic.AddUint64(&seqSmartClient, 1), 10)
-	channel := &SocketChannel{
+	channel := &defaultChannel{
 		ctx:  context.WithValue(ctx, CtxKeyFromClient, conn.(netpoll.Conn).Fd()),
 		fd:   conn.(netpoll.Conn).Fd(),
 		conn: pkg.NetNetpollConn(conn),

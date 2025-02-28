@@ -21,7 +21,7 @@ const (
 	HeaderFrom        = CtxKeyFrom // HeaderFrom
 )
 
-var TypeSocketChannel = reflect.TypeOf(&SocketChannel{})
+var TypeSocketChannel = reflect.TypeOf((*Channel)(nil)).Elem()
 var handlerSignatureRegexp = regexp.MustCompile(handlerRegexp)
 var TypeContext = reflect.TypeOf((*context.Context)(nil)).Elem()
 

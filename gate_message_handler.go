@@ -13,7 +13,7 @@ func NewGateMessageHandler() MessageHandler {
 type gateMessageHandler struct {
 }
 
-func (gsh *gateMessageHandler) OnMessage(ctx context.Context, h *SocketChannel, m *message.ProtocolMessage) error {
+func (gsh *gateMessageHandler) OnMessage(ctx context.Context, h Channel, m *message.ProtocolMessage) error {
 	if m.Header == nil {
 		m.Header = map[string]string{}
 	}

@@ -30,15 +30,15 @@ func (m *TestModule) Name() string {
 	return "TestModule"
 }
 
-func (m *TestModule) RegisterAccount1001(ctx context.Context, channel *SocketChannel, req *Req) {
+func (m *TestModule) RegisterAccount1001(ctx context.Context, channel Channel, req *Req) {
 	utility.DefaultLogger().Info("RegisterAccount1001 invoked", zap.Any("req", *req))
 }
 
-func (m *TestModule) FindFriend1002(ctx context.Context, channel *SocketChannel, req *Req) {
+func (m *TestModule) FindFriend1002(ctx context.Context, channel Channel, req *Req) {
 	utility.DefaultLogger().Info("FindFriend1002 invoked", zap.Any("req", *req))
 }
 
-func (m *TestModule) UseItem1003(ctx context.Context, channel *SocketChannel, req *Req) *message.ProtocolMessage {
+func (m *TestModule) UseItem1003(ctx context.Context, channel Channel, req *Req) *message.ProtocolMessage {
 	utility.DefaultLogger().Info("UseItem1003 invoked", zap.Any("req", *req))
 	return &message.ProtocolMessage{
 		Seq:     1,
@@ -49,7 +49,7 @@ func (m *TestModule) UseItem1003(ctx context.Context, channel *SocketChannel, re
 	}
 }
 
-func (m *TestModule) StartFight1004(ctx context.Context, channel *SocketChannel, req *Req) *message.ProtocolMessage {
+func (m *TestModule) StartFight1004(ctx context.Context, channel Channel, req *Req) *message.ProtocolMessage {
 	utility.DefaultLogger().Info("StartFight1004 invoked", zap.Any("req", *req))
 	return &message.ProtocolMessage{
 		Seq:     2,
@@ -60,7 +60,7 @@ func (m *TestModule) StartFight1004(ctx context.Context, channel *SocketChannel,
 	}
 }
 
-func (m *TestModule) StartFightRes1005(ctx context.Context, channel *SocketChannel, req *Req) {
+func (m *TestModule) StartFightRes1005(ctx context.Context, channel Channel, req *Req) {
 	utility.DefaultLogger().Info("StartFightRes1005 invoked", zap.Any("req", *req))
 }
 

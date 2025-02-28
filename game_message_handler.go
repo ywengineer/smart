@@ -12,7 +12,7 @@ func NewGameMessageHandler() MessageHandler {
 type gameMessageHandler struct {
 }
 
-func (gsh *gameMessageHandler) OnMessage(ctx context.Context, h *SocketChannel, m *message.ProtocolMessage) error {
+func (gsh *gameMessageHandler) OnMessage(ctx context.Context, h Channel, m *message.ProtocolMessage) error {
 	hManager.invokeHandler(ctx, h, m)
 	return nil
 }

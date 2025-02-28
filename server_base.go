@@ -71,20 +71,20 @@ func (s *baseServer) onChannelRead(fd int) error {
 	if channel, ok := s.channels.Load(fd); ok == false {
 		return ErrNotRegisteredChannel
 	} else { // registered
-		return channel.(*SocketChannel).onMessageRead()
+		return channel.(*defaultChannel).onMessageRead()
 	}
 }
 
 func (s *baseServer) onChannelClosed(fd int) error {
 	if ch, ok := s.channels.LoadAndDelete(fd); ok {
 		atomic.AddInt32(&s.channelCount, -1)
-		ch.(*SocketChannel).onClose()
+		ch.(*defaultChannel).onClose()
 	}
 	return nil
 }
 
 func (s *baseServer) onChannelOpen(conn pkg.Conn) {
-	channel := channelPool.Get().(*SocketChannel)
+	channel := channelPool.Get().(*defaultChannel)
 	channel.ctx = context.WithValue(s.ctx, CtxKeyFromClient, conn.Fd())
 	channel.conn, channel.fd = conn, conn.Fd()
 	channel.worker = s.workerManager.Pick(channel.fd)
@@ -111,9 +111,9 @@ func (s *baseServer) ConnCount() int32 {
 }
 
 // GetChannel by fd(id)
-func (s *baseServer) GetChannel(id int) *SocketChannel {
+func (s *baseServer) GetChannel(id int) Channel {
 	if ch, ok := s.channels.Load(id); ok {
-		return ch.(*SocketChannel)
+		return ch.(Channel)
 	}
 	return nil
 }

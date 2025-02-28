@@ -33,7 +33,7 @@ type Server interface {
 	Serve(ctx context.Context) (context.Context, error)
 	Shutdown() error
 	ConnCount() int32
-	GetChannel(id int) *SocketChannel
+	GetChannel(id int) Channel
 	SetOnConfigChange(callback func(conf sl.Conf))
 	SetOnTick(tick func(ctx context.Context) time.Duration)
 }

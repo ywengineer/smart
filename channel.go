@@ -12,7 +12,15 @@ import (
 	"sync"
 )
 
-type SocketChannel struct {
+type Channel interface {
+	Context() context.Context
+	LaterRun(task func())
+	Close() error
+	Send(msg interface{}) error
+	GetFd() int
+}
+
+type defaultChannel struct {
 	ctx          context.Context
 	fd           int
 	conn         pkg.Conn
@@ -24,8 +32,12 @@ type SocketChannel struct {
 	msgHandlers  []MessageHandler
 }
 
+func (h *defaultChannel) Context() context.Context {
+	return h.ctx
+}
+
 // Send all data and event callback run in worker related SocketChannel
-func (h *SocketChannel) Send(msg interface{}) error {
+func (h *defaultChannel) Send(msg interface{}) error {
 	// already encoded, send directly.
 	if data, ok := msg.([]byte); ok {
 		return h.send(data)
@@ -39,15 +51,15 @@ func (h *SocketChannel) Send(msg interface{}) error {
 }
 
 // LaterRun run task in worker related SocketChannel
-func (h *SocketChannel) LaterRun(task func()) {
+func (h *defaultChannel) LaterRun(task func()) {
 	h.worker.Run(h.ctx, task)
 }
 
-func (h *SocketChannel) Close() error {
+func (h *defaultChannel) Close() error {
 	return h.conn.Close()
 }
 
-func (h *SocketChannel) send(data []byte) error {
+func (h *defaultChannel) send(data []byte) error {
 	if h.conn == nil {
 		return errors.New("SocketChannel is not initialized correctly")
 	}
@@ -61,11 +73,11 @@ func (h *SocketChannel) send(data []byte) error {
 }
 
 // GetFd returns id of channel
-func (h *SocketChannel) GetFd() int {
+func (h *defaultChannel) GetFd() int {
 	return h.fd
 }
 
-func (h *SocketChannel) onOpen() {
+func (h *defaultChannel) onOpen() {
 	if len(h.handlers) > 0 {
 		h.LaterRun(func() {
 			for _, handler := range h.handlers {
@@ -75,7 +87,7 @@ func (h *SocketChannel) onOpen() {
 	}
 }
 
-func (h *SocketChannel) onClose() {
+func (h *defaultChannel) onClose() {
 	if len(h.handlers) > 0 {
 		h.LaterRun(func() {
 			defer channelPool.Put(h)
@@ -86,7 +98,7 @@ func (h *SocketChannel) onClose() {
 	}
 }
 
-func (h *SocketChannel) onMessageRead() error {
+func (h *defaultChannel) onMessageRead() error {
 	for {
 		msg := protocolMessagePool.Get()
 		err := h.codec.Decode(h.conn.Reader(), msg)
@@ -142,6 +154,6 @@ var protocolMessagePool = &sync.Pool{
 
 var channelPool = &sync.Pool{
 	New: func() interface{} {
-		return &SocketChannel{}
+		return &defaultChannel{}
 	},
 }

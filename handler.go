@@ -17,7 +17,7 @@ var hManager = &handlerManager{
 // handler structure
 // code : handler for message code
 // name : string
-// in(*SocketChannel, request): request must be a ptr
+// in(context.Context, Channel, request): request must be a ptr
 type handlerDefinition struct {
 	messageCode int
 	name        string
@@ -26,7 +26,7 @@ type handlerDefinition struct {
 	inPool      *sync.Pool
 }
 
-func (hd *handlerDefinition) invoke(ctx context.Context, channel *SocketChannel, in interface{}) interface{} {
+func (hd *handlerDefinition) invoke(ctx context.Context, channel Channel, in interface{}) interface{} {
 	out := hd.method.Call([]reflect.Value{reflect.ValueOf(ctx), reflect.ValueOf(channel), reflect.ValueOf(in)})
 	if len(out) == 0 {
 		return nil
@@ -48,7 +48,7 @@ type handlerManager struct {
 	_handlerMap map[int32]*handlerDefinition
 }
 
-func (hm *handlerManager) invokeHandler(ctx context.Context, c *SocketChannel, req *message.ProtocolMessage) {
+func (hm *handlerManager) invokeHandler(ctx context.Context, c Channel, req *message.ProtocolMessage) {
 	hd := hm.findHandlerDefinition(req.GetRoute())
 	if hd == nil {
 		utility.DefaultLogger().Error("handler definition not found for message code", zap.Int32("msgCode", req.GetRoute()))
@@ -104,7 +104,7 @@ func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
 	}
 }
 
-func findMessageCodec(sc *SocketChannel, mc message.Codec) codec.Codec {
+func findMessageCodec(sc Channel, mc message.Codec) codec.Codec {
 	switch mc {
 	case message.Codec_JSON:
 		return codec.Json()
@@ -118,7 +118,7 @@ func findMessageCodec(sc *SocketChannel, mc message.Codec) codec.Codec {
 	case message.Codec_FAST_PB:
 		return codec.Fastpb()
 	case message.Codec_SERVER:
-		return sc.codec
+		return sc.(*defaultChannel).codec
 	default:
 		return nil
 	}
