@@ -23,7 +23,7 @@ const (
 	stopped
 )
 
-type serverCoreEventHolder interface {
+type serverHolder interface {
 	onSpin(ctx context.Context) error
 	onShutdown() error
 }
@@ -33,7 +33,7 @@ type Server interface {
 	Serve(ctx context.Context) (context.Context, error)
 	Shutdown() error
 	ConnCount() int32
-	GetChannel(id int) Channel
+	GetChannel(id int) (Channel, bool)
 	SetOnConfigChange(callback func(conf sl.Conf))
 	SetOnTick(tick func(ctx context.Context) time.Duration)
 }

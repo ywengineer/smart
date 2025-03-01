@@ -15,7 +15,7 @@ import (
 )
 
 type baseServer struct {
-	holder         serverCoreEventHolder
+	holder         serverHolder
 	lock           sync.Mutex
 	status         status
 	channels       sync.Map // key=fd, value=connection
@@ -111,11 +111,11 @@ func (s *baseServer) ConnCount() int32 {
 }
 
 // GetChannel by fd(id)
-func (s *baseServer) GetChannel(id int) Channel {
+func (s *baseServer) GetChannel(id int) (Channel, bool) {
 	if ch, ok := s.channels.Load(id); ok {
-		return ch.(Channel)
+		return ch.(Channel), ok
 	}
-	return nil
+	return nil, false
 }
 
 func (s *baseServer) SetOnConfigChange(callback func(conf sl.Conf)) {
