@@ -25,4 +25,4 @@ var TypeSocketChannel = reflect.TypeOf((*Channel)(nil)).Elem()
 var handlerSignatureRegexp = regexp.MustCompile(handlerRegexp)
 var TypeContext = reflect.TypeOf((*context.Context)(nil)).Elem()
 
-//var TypeSmartModule = reflect.TypeOf((SmartModule)(nil))
+//var TypeSmartModule = reflect.TypeOf((*Module)(nil)).Elem()

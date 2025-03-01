@@ -9,14 +9,17 @@ import (
 	"strconv"
 )
 
-type SmartModule interface {
+// Module game logic module interface define
+// logic method signature MethodFormat[(MessageName:string)(MessageCode:int)](context.Context, Channel, *Any) [*ResponseType]
+// can get CtxKeySeq and CtxKeyHeader from logic method parameter context.Context
+type Module interface {
 	Name() string
 }
 
-func RegisterModule(module SmartModule) error {
+func RegisterModule(module Module) error {
 	mv := reflect.ValueOf(module)
 	if mv.Type().Kind() != reflect.Ptr {
-		return fmt.Errorf("module must be a ptr and implements SmartModule")
+		return fmt.Errorf("module must be a ptr and implements Module")
 	}
 	methods := mv.NumMethod()
 	if methods == 0 {
