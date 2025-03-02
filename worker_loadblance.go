@@ -13,7 +13,7 @@ type LoadBalance int
 const (
 	// Random requests that connections are randomly distributed.
 	Random LoadBalance = iota
-	// Hash. requests that connections are bind to a fixed pool.
+	// Hash requests that connections are bind to a fixed pool.
 	Hash
 	RoundRobin
 )
@@ -21,7 +21,7 @@ const (
 // loadBalance sets the load balancing method for []*Pool
 type loadBalance interface {
 	LoadBalance() LoadBalance
-	// Choose the most qualified Pool
+	// Pick Choose the most qualified Pool
 	Pick(id int) Worker
 }
 

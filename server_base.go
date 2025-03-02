@@ -154,7 +154,7 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 		//
 		utility.DefaultLogger().Info("serve run at", zap.Any("address", s.conf.Network+"://"+s.conf.Address))
 		//
-		if err := s.holder.onSpin(s.ctx); err != nil {
+		if err := s.holder.onSpin(); err != nil {
 			utility.DefaultLogger().Panic("serve listener error", zap.Error(err))
 			// start failed or serve quit
 			_ = s.Shutdown()

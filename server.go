@@ -24,7 +24,7 @@ const (
 )
 
 type serverHolder interface {
-	onSpin(ctx context.Context) error
+	onSpin() error
 	onShutdown() error
 }
 
@@ -90,7 +90,7 @@ func NewSmartServer(loader sl.SmartLoader, initializer ...ChannelInitializer) (S
 	return _newServer(loader, false, initializer...)
 }
 
-func (s *defaultServer) onSpin(ctx context.Context) error {
+func (s *defaultServer) onSpin() error {
 	var listener net.Listener
 	var err error
 	if goos := runtime.GOOS; goos == "windows" {

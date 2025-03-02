@@ -1,7 +1,6 @@
 package smart
 
 import (
-	"context"
 	"fmt"
 	"github.com/panjf2000/gnet/v2"
 	"github.com/pkg/errors"
@@ -50,7 +49,7 @@ func (s *gnetServer) OnTraffic(c gnet.Conn) (action gnet.Action) {
 	return
 }
 
-func (s *gnetServer) onSpin(ctx context.Context) error {
+func (s *gnetServer) onSpin() error {
 	return gnet.Run(s, s.conf.Network+"://"+s.conf.Address,
 		gnet.WithMulticore(true),
 		gnet.WithTCPNoDelay(gnet.TCPNoDelay),
