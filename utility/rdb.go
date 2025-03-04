@@ -109,6 +109,7 @@ func initRbdConnPool(gdb *gorm.DB, driver RdbProperties) (*gorm.DB, error) {
 
 func defaultConfig() *gorm.Config {
 	return &gorm.Config{
-		PrepareStmt: true,
+		PrepareStmt:            true,
+		SkipDefaultTransaction: true,
 	}
 }
