@@ -23,7 +23,7 @@ type baseServer struct {
 	initializers   []ChannelInitializer
 	workerManager  WorkerManager
 	conf           *sl.Conf
-	confWatcher    func(ctx context.Context, callback sl.WatchCallback) error
+	confLoader     sl.SmartLoader
 	onConfigChange func(conf sl.Conf)
 	ctx            context.Context
 	shutdownHook   context.CancelFunc
@@ -163,9 +163,12 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 	// tick
 	go s.ticker()
 	// watch config
-	if err := s.confWatcher(s.ctx, func(conf interface{}) error {
-		utility.DefaultLogger().Debug("server config changed", zap.Any("old", *s.conf), zap.Any("new", *conf.(*sl.Conf)))
-		s.conf = conf.(*sl.Conf)
+	if err := s.confLoader.Watch(s.ctx, func(conf string) error {
+		if err := s.confLoader.Unmarshal([]byte(conf), s.conf); err != nil {
+			utility.DefaultLogger().Error("unmarshal configuration when watch", zap.Error(err))
+			return err
+		}
+		utility.DefaultLogger().Debug("server config changed", zap.Any("conf", *s.conf))
 		if s.onConfigChange != nil {
 			s.onConfigChange(*s.conf)
 		}

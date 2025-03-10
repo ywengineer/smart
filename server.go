@@ -62,7 +62,7 @@ func _newServer(loader sl.SmartLoader, useGNet bool, initializer ...ChannelIniti
 				workerManager: worker,
 				initializers:  initializer,
 				conf:          conf,
-				confWatcher:   loader.Watch,
+				confLoader:    loader,
 			},
 		}
 		srv.baseServer.holder = srv
@@ -74,7 +74,7 @@ func _newServer(loader sl.SmartLoader, useGNet bool, initializer ...ChannelIniti
 				workerManager: worker,
 				initializers:  initializer,
 				conf:          conf,
-				confWatcher:   loader.Watch,
+				confLoader:    loader,
 			},
 		}
 		srv.baseServer.holder = srv

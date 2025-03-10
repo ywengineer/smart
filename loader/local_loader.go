@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
+	"github.com/ywengineer/smart/utility"
+	"go.uber.org/zap"
 	"log"
 	"os"
 	"strings"
@@ -17,6 +19,10 @@ type localLoader struct {
 
 func NewLocalLoader(path string) SmartLoader {
 	return &localLoader{path: path}
+}
+
+func (ll *localLoader) Unmarshal(data []byte, out interface{}) error {
+	return ll.decoder.Unmarshal(data, out)
 }
 
 func (ll *localLoader) Load(out interface{}) error {
@@ -37,7 +43,7 @@ func (ll *localLoader) Load(out interface{}) error {
 	if err != nil {
 		return err
 	}
-	return ll.decoder.Unmarshal(data, out)
+	return ll.Unmarshal(data, out)
 }
 
 func (ll *localLoader) check() error {
@@ -67,11 +73,10 @@ func (ll *localLoader) Watch(ctx context.Context, callback WatchCallback) error 
 					return
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					conf := &Conf{}
-					if ll.Load(conf) != nil {
-						log.Printf("[localLoader] file changed. local loader parse error: %v\n", err)
+					if data, err := os.ReadFile(ll.path); err == nil {
+						_ = callback(string(data))
 					} else {
-						_ = callback(conf)
+						utility.DefaultLogger().Error("read file error when trigger watch event", zap.String("tag", "LocalLoader"), zap.String("err", err.Error()))
 					}
 				}
 			case err = <-watcher.Errors:

@@ -17,8 +17,9 @@ func TestNacosLoader(t *testing.T) {
 	err = loader.Load(c)
 	assert.Nil(t, err)
 	t.Logf("%v", *c)
-	err = loader.Watch(context.Background(), func(conf interface{}) error {
-		t.Logf("config change: %v", *(conf.(*Conf)))
+	err = loader.Watch(context.Background(), func(conf string) error {
+		_ = loader.Unmarshal([]byte(conf), c)
+		t.Logf("config change: %v", *c)
 		return nil
 	})
 	assert.Nil(t, err)

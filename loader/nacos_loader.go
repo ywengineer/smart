@@ -61,6 +61,10 @@ func NewNacosClient(ipAddr string, port uint64, contextPath string,
 	)
 }
 
+func (nl *nacosLoader) Unmarshal(data []byte, out interface{}) error {
+	return nl.decoder.Unmarshal(data, out)
+}
+
 func (nl *nacosLoader) Load(out interface{}) error {
 	if err := nl.check(); err != nil {
 		return err
@@ -70,7 +74,7 @@ func (nl *nacosLoader) Load(out interface{}) error {
 	if err != nil {
 		return errors.WithMessage(err, "load loader content from nacos error")
 	}
-	return nl.decoder.Unmarshal([]byte(content), out)
+	return nl.Unmarshal([]byte(content), out)
 }
 
 func (nl *nacosLoader) check() error {
@@ -94,13 +98,7 @@ func (nl *nacosLoader) Watch(ctx context.Context, callback WatchCallback) error 
 		DataId: nl.dataId,
 		Group:  nl.group,
 		OnChange: func(namespace, group, dataId, data string) {
-			conf := &Conf{}
-			err := nl.decoder.Unmarshal([]byte(data), conf)
-			if err != nil {
-				log.Printf("[nacosLoader] loader changed. nacos loader parse error: %v\n", err)
-			} else {
-				_ = callback(conf)
-			}
+			_ = callback(data)
 		},
 	}
 	go func() {
