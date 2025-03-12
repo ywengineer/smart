@@ -47,7 +47,7 @@ require (
 	github.com/alibabacloud-go/tea-utils v1.4.4 // indirect
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.7 // indirect
 	github.com/alibabacloud-go/tea-xml v1.1.3 // indirect
-	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1800 // indirect
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.94 // indirect
 	github.com/aliyun/alibabacloud-dkms-gcs-go-sdk v0.5.1 // indirect
 	github.com/aliyun/alibabacloud-dkms-transfer-go-sdk v0.1.8 // indirect
 	github.com/aliyun/aliyun-secretsmanager-client-go v1.1.5 // indirect
@@ -70,13 +70,14 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
+	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20210501183033-44dafcb38ecc // indirect
 	github.com/panjf2000/ants/v2 v2.11.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
