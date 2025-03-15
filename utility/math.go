@@ -30,14 +30,14 @@ func MaxInt64(a, b int64) int64 {
 	return b
 }
 
-func MaxInt(a, b int) int {
+func MaxInt[T int | int32 | int64](a, b T) T {
 	if a > b {
 		return a
 	}
 	return b
 }
 
-func MinInt(a, b int) int {
+func MinInt[T int | int32 | int64](a, b T) T {
 	if a < b {
 		return a
 	}
