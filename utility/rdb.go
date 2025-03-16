@@ -8,6 +8,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"net/url"
 	"strings"
 	"time"
@@ -74,7 +75,7 @@ func NewMySQL(driver RdbProperties) (*gorm.DB, error) {
 		DontSupportRenameIndex:    true,  // drop & create when rename index, rename index not supported before MySQL 5.7, MariaDB
 		DontSupportRenameColumn:   true,  // `change` when rename column, rename column not supported before MySQL 8, MariaDB
 		SkipInitializeWithVersion: false, // autoconfigure based on currently MySQL version
-	}), defaultConfig())
+	}), defaultConfig(driver.DebugMode))
 }
 
 // NewPostgres create gorm.DB instance based on postgres database
@@ -88,7 +89,7 @@ func NewPostgres(driver RdbProperties) (*gorm.DB, error) {
 	return gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: true, // disables implicit prepared statement usage
-	}), defaultConfig())
+	}), defaultConfig(driver.DebugMode))
 }
 
 func initRbdConnPool(gdb *gorm.DB, driver RdbProperties) (*gorm.DB, error) {
@@ -107,7 +108,14 @@ func initRbdConnPool(gdb *gorm.DB, driver RdbProperties) (*gorm.DB, error) {
 	return gdb, nil
 }
 
-func defaultConfig() *gorm.Config {
+func defaultConfig(debug bool) *gorm.Config {
+	if debug {
+		return &gorm.Config{
+			PrepareStmt:            true,
+			SkipDefaultTransaction: true,
+			Logger:                 logger.Default.LogMode(logger.Info),
+		}
+	}
 	return &gorm.Config{
 		PrepareStmt:            true,
 		SkipDefaultTransaction: true,

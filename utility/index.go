@@ -11,6 +11,7 @@ type RdbProperties struct {
 	Parameters string           `json:"parameters" yaml:"parameters"`
 	Pool       DbPoolProperties `json:"pool" yaml:"pool"`
 	Cache      string           `json:"cache" yaml:"cache"`
+	DebugMode  bool             `json:"debug_mode" yaml:"debug-mode"`
 }
 
 type DbPoolProperties struct {
