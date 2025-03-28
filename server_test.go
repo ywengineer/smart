@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/binary"
 	"github.com/stretchr/testify/assert"
+	loader2 "github.com/ywengineer/smart-kit/pkg/loaders"
+	"github.com/ywengineer/smart-kit/pkg/nacos"
 	"github.com/ywengineer/smart/codec"
-	"github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/message"
 	"github.com/ywengineer/smart/utility"
 	"testing"
@@ -14,14 +15,14 @@ import (
 
 func TestServerWithNacos(t *testing.T) {
 	//network, addr := "tcp", "127.0.0.1:12345"
-	nc, err := loader.NewNacosClient(
+	nc, err := nacos.NewNacosConfigClient(
 		"192.168.44.128", 8848, "/nacos", 5000,
 		"a7aabc24-17a7-4ac5-978f-6f933ce19dd4", "nacos", "nacos",
 		"debug",
 	)
 	assert.Nil(t, err)
 	//
-	srv, err := NewSmartServer(loader.NewDefaultNacosLoader(nc, "smart.gate.yaml", loader.NewYamlDecoder()),
+	srv, err := NewSmartServer(loader2.NewDefaultNacosLoader(nc, "smart.gate.yaml", loader2.NewYamlDecoder()),
 		WithByteOrder(func() binary.ByteOrder {
 			return binary.LittleEndian
 		}),
@@ -57,7 +58,7 @@ func TestGNetServer(t *testing.T) {
 	network, addr := "tcp", "127.0.0.1:12345"
 
 	srv, err := NewGNetServer(
-		loader.NewValueLoader(&loader.Conf{Network: network, Address: addr, Workers: 1, WorkerLoadBalance: "rr"}),
+		loader2.NewValueLoader(&loader2.Conf{Network: network, Address: addr, Workers: 1, WorkerLoadBalance: "rr"}),
 		WithByteOrder(func() binary.ByteOrder {
 			return binary.LittleEndian
 		}),

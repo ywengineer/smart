@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
-	sl "github.com/ywengineer/smart/loader"
+	"github.com/ywengineer/smart-kit/pkg/loaders"
 	"github.com/ywengineer/smart/pkg"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
@@ -34,7 +34,7 @@ type Server interface {
 	Shutdown() error
 	ConnCount() int32
 	GetChannel(id int) (Channel, bool)
-	SetOnConfigChange(callback func(conf sl.Conf))
+	SetOnConfigChange(callback func(conf loaders.Conf))
 	SetOnTick(tick func(ctx context.Context) time.Duration)
 }
 
@@ -43,12 +43,12 @@ type defaultServer struct {
 	eventLoop netpoll.EventLoop
 }
 
-func _newServer(loader sl.SmartLoader, useGNet bool, initializer ...ChannelInitializer) (Server, error) {
+func _newServer(loader loaders.SmartLoader, useGNet bool, initializer ...ChannelInitializer) (Server, error) {
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}
 	// load loader
-	conf := &sl.Conf{}
+	conf := &loader.Conf{}
 	if err := loader.Load(conf); err != nil {
 		return nil, errors.WithMessage(err, "load server loader error")
 	} else {
@@ -82,11 +82,11 @@ func _newServer(loader sl.SmartLoader, useGNet bool, initializer ...ChannelIniti
 	}
 }
 
-func NewGNetServer(loader sl.SmartLoader, initializer ...ChannelInitializer) (Server, error) {
+func NewGNetServer(loader loaders.SmartLoader, initializer ...ChannelInitializer) (Server, error) {
 	return _newServer(loader, true, initializer...)
 }
 
-func NewSmartServer(loader sl.SmartLoader, initializer ...ChannelInitializer) (Server, error) {
+func NewSmartServer(loader loaders.SmartLoader, initializer ...ChannelInitializer) (Server, error) {
 	return _newServer(loader, false, initializer...)
 }
 

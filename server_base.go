@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/binary"
 	"github.com/pkg/errors"
+	"github.com/ywengineer/smart-kit/pkg/loaders"
 	"github.com/ywengineer/smart/codec"
-	sl "github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/pkg"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
@@ -22,9 +22,9 @@ type baseServer struct {
 	channelCount   int32    // accept counter
 	initializers   []ChannelInitializer
 	workerManager  WorkerManager
-	conf           *sl.Conf
-	confLoader     sl.SmartLoader
-	onConfigChange func(conf sl.Conf)
+	conf           *loaders.Conf
+	confLoader     loaders.SmartLoader
+	onConfigChange func(conf loaders.Conf)
 	ctx            context.Context
 	shutdownHook   context.CancelFunc
 	onTick         func(ctx context.Context) time.Duration
@@ -118,7 +118,7 @@ func (s *baseServer) GetChannel(id int) (Channel, bool) {
 	return nil, false
 }
 
-func (s *baseServer) SetOnConfigChange(callback func(conf sl.Conf)) {
+func (s *baseServer) SetOnConfigChange(callback func(conf loaders.Conf)) {
 	s.onConfigChange = callback
 }
 
