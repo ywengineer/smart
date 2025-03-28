@@ -5,9 +5,9 @@ import (
 	"errors"
 	"github.com/cloudwego/netpoll"
 	"github.com/ywengineer/smart-kit/pkg/logk"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/ywengineer/smart/message"
 	"github.com/ywengineer/smart/pkg"
-	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"sync"
@@ -63,10 +63,10 @@ func (c *smartCodec) Encode(i interface{}) ([]byte, error) {
 		bytes, _ := proto.Marshal(req)
 		buffer := netpoll.NewLinkBuffer(message.ProtocolMetaBytes + len(bytes))
 		defer buffer.Release()
-		_, _ = buffer.WriteBinary(utility.Int32ToBytes(c.odr, int32(len(bytes)))) // body len
-		_, _ = buffer.WriteBinary(utility.Int16ToBytes(c.odr, int16(0)))          // protocol
-		_ = buffer.WriteByte(0)                                                   // compress
-		_ = buffer.WriteByte(0)                                                   // flags
+		_, _ = buffer.WriteBinary(utilk.Int32ToBytes(c.odr, int32(len(bytes)))) // body len
+		_, _ = buffer.WriteBinary(utilk.Int16ToBytes(c.odr, int16(0)))          // protocol
+		_ = buffer.WriteByte(0)                                                 // compress
+		_ = buffer.WriteByte(0)                                                 // flags
 		_, _ = buffer.WriteBinary(bytes)
 		err := buffer.Flush()
 		return buffer.Bytes(), err

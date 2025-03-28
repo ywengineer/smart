@@ -6,9 +6,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	loader2 "github.com/ywengineer/smart-kit/pkg/loaders"
 	"github.com/ywengineer/smart-kit/pkg/nacos"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/ywengineer/smart/codec"
 	"github.com/ywengineer/smart/message"
-	"github.com/ywengineer/smart/utility"
 	"testing"
 	"time"
 )
@@ -46,7 +46,7 @@ func TestServerWithNacos(t *testing.T) {
 	_srv := srv.(*defaultServer)
 	runClient(t, ctx, _srv.conf.Network, _srv.conf.Address, _srv.initializers)
 	//
-	_ = <-utility.WatchQuitSignal()
+	_ = <-utilk.WatchQuitSignal()
 	// 5. wait smart server shutdown
 	t.Logf("smart nacos server was stopped. %v", srv.Shutdown())
 }
@@ -86,7 +86,7 @@ func TestGNetServer(t *testing.T) {
 	//
 	runClient(t, ctx, network, addr, _srv.initializers)
 	//
-	_ = <-utility.WatchQuitSignal()
+	_ = <-utilk.WatchQuitSignal()
 	t.Log("smart server will be stop.")
 	err = srv.Shutdown()
 	// 5. wait smart server shutdown

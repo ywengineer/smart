@@ -3,9 +3,9 @@ package smart
 import (
 	"context"
 	"github.com/ywengineer/smart-kit/pkg/logk"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/ywengineer/smart/codec"
 	"github.com/ywengineer/smart/message"
-	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"reflect"
 	"sync"
@@ -62,7 +62,7 @@ func (hm *handlerManager) invokeHandler(ctx context.Context, c Channel, req *mes
 		_ = c.Close()
 		return
 	}
-	in, buf := hd.newIn(), utility.NewLinkBuffer(req.Payload)
+	in, buf := hd.newIn(), utilk.NewLinkBuffer(req.Payload)
 	defer func() {
 		hd.releaseIn(in)
 		_ = buf.Release()

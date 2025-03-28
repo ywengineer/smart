@@ -1,9 +1,9 @@
 package smart
 
 import (
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/ywengineer/smart/codec"
 	"github.com/ywengineer/smart/message"
-	"github.com/ywengineer/smart/utility"
 	"sync"
 	"testing"
 )
@@ -18,7 +18,7 @@ func TestPBCodec(t *testing.T) {
 	json := codec.Protobuf()
 	data, _ := json.Encode(&message.ForeignMessage{C: 1, D: 2})
 
-	req, buf := p.Get(), utility.NewLinkBuffer(data)
+	req, buf := p.Get(), utilk.NewLinkBuffer(data)
 	_ = json.Decode(buf, req)
 	_ = buf.Release()
 	t.Logf("%p = %v", req, req)
@@ -27,7 +27,7 @@ func TestPBCodec(t *testing.T) {
 	req = p.Get()
 	//
 	data, _ = json.Encode(&message.ForeignMessage{C: 3})
-	buf = utility.NewLinkBuffer(data)
+	buf = utilk.NewLinkBuffer(data)
 	_ = json.Decode(buf, req)
 	_ = buf.Release()
 	t.Logf("%p = %v", req, req)
@@ -41,14 +41,14 @@ func TestJSONCodec(t *testing.T) {
 	}
 	json := codec.Json()
 
-	req, buf := p.Get().(*Req), utility.NewLinkBuffer([]byte(`{"ping": 1, "extra": "abc"}`))
+	req, buf := p.Get().(*Req), utilk.NewLinkBuffer([]byte(`{"ping": 1, "extra": "abc"}`))
 	_ = json.Decode(buf, req)
 	_ = buf.Release()
 	t.Logf("%p = %v", req, req)
 
 	req.Reset()
 	p.Put(req)
-	req, buf = p.Get().(*Req), utility.NewLinkBuffer([]byte(`{"ping": 1}`))
+	req, buf = p.Get().(*Req), utilk.NewLinkBuffer([]byte(`{"ping": 1}`))
 	_ = json.Decode(buf, req)
 	_ = buf.Release()
 	t.Logf("%p = %v", req, req)

@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ywengineer/smart-kit/pkg/loaders"
 	"github.com/ywengineer/smart-kit/pkg/logk"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/ywengineer/smart/pkg"
-	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"net"
 	"runtime"
@@ -55,7 +55,7 @@ func _newServer(loader loaders.SmartLoader, useGNet bool, initializer ...Channel
 	} else {
 		logk.Debug("new smart server with conf", zap.Any("conf", *conf))
 	}
-	worker, _ := NewWorkerManager(utility.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
+	worker, _ := NewWorkerManager(utilk.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
 	if useGNet {
 		srv := &gnetServer{
 			baseServer: &baseServer{

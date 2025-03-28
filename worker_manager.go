@@ -28,8 +28,9 @@ func NewSingleWorker(name string, panicHandler func(context.Context, interface{}
 func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
 	if poolSize < 1 {
 		logk.Error("set invalid poolSize", zap.Int("poolSize", poolSize))
-		return nil, fmt.Errorf("set invalid poolSize[%d]", poolSize)
+		return nil, fmt.Errorf("set invalid poolSize [%d]", poolSize)
 	}
+	logk.Infof("create worker manager with pool size [%d]", poolSize)
 	manager := &defaultWorkerManager{}
 	for idx := 0; idx < poolSize; idx++ {
 		manager.workers = append(manager.workers, NewSingleWorker(fmt.Sprintf("smart-worker-%d", idx), manager.errorHandler))
