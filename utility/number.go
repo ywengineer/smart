@@ -3,6 +3,7 @@ package utility
 import (
 	"encoding/json"
 	"errors"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"net/url"
 	"reflect"
@@ -61,7 +62,7 @@ func QueryInt(query url.Values, key string) int {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
 			return n
 		} else {
-			DefaultLogger().Warn("get int value from url Query", zap.String("key", key), zap.String("value", v))
+			logk.Warn("get int value from url Query", zap.String("key", key), zap.String("value", v))
 		}
 	}
 	return 0

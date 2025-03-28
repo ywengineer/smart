@@ -3,8 +3,8 @@ package smart
 import (
 	"context"
 	"github.com/cloudwego/netpoll"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/ywengineer/smart/pkg"
-	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"strconv"
 	"sync/atomic"
@@ -24,7 +24,7 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 	conn, err := dialer.DialConnection(network, addr, time.Second)
 	//
 	if err != nil {
-		utility.DefaultLogger().Panic("connect to smart server failed", zap.String("server", network+"://"+addr), zap.Error(err))
+		logk.Fatal("connect to smart server failed", zap.String("server", network+"://"+addr), zap.Error(err))
 		return nil
 	}
 	//------------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 		fd:   conn.(netpoll.Conn).Fd(),
 		conn: pkg.NetNetpollConn(conn),
 		worker: NewSingleWorker("smart-client-"+scId, func(ctx context.Context, i interface{}) {
-			utility.DefaultLogger().Error("client worker panic occurred", zap.String("smart-client", scId), zap.Any("err", i))
+			logk.Error("client worker panic occurred", zap.String("smart-client", scId), zap.Any("err", i))
 		}),
 	}
 	for _, initializer := range initializers {
@@ -56,14 +56,14 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 			for {
 				select {
 				case <-ctx.Done():
-					utility.DefaultLogger().Info(
+					logk.Info(
 						"client will be close, because of client running context is finished",
 						zap.String("client", scId),
 						zap.Error(channel.Close()))
 					return
 				default:
 					if ctx.Err() != nil {
-						utility.DefaultLogger().Error(
+						logk.Error(
 							"client will be close, because of client context error occurred",
 							zap.String("client", scId),
 							zap.Error(channel.Close()))

@@ -1,6 +1,7 @@
 package utility
 
 import (
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"
 )
@@ -12,18 +13,18 @@ type MailClient struct {
 func (mc *MailClient) SendMail(from, to, cc, bcc string, subject, bodyType, bodyString string) {
 	var rec []string
 	if ValidMail(from) == false {
-		DefaultLogger().Error("missing mail's sender")
+		logk.Error("missing mail's sender")
 		return
 	}
 	if ValidMail(to) == false {
-		DefaultLogger().Error("missing mail's to")
+		logk.Error("missing mail's to")
 		return
 	}
 	rec = append(rec, to)
 	//
 	if len(cc) > 0 {
 		if ValidMail(cc) == false {
-			DefaultLogger().Error("unknown mail's cc. %s", zap.String("cc", cc))
+			logk.Error("unknown mail's cc. %s", zap.String("cc", cc))
 			return
 		}
 		rec = append(rec, to)
@@ -32,7 +33,7 @@ func (mc *MailClient) SendMail(from, to, cc, bcc string, subject, bodyType, body
 	//
 	if len(bcc) > 0 {
 		if ValidMail(bcc) == false {
-			DefaultLogger().Error("unknown mail's bcc. %s", zap.String("bcc", bcc))
+			logk.Error("unknown mail's bcc. %s", zap.String("bcc", bcc))
 			return
 		}
 		rec = append(rec, bcc)
@@ -51,7 +52,7 @@ func (mc *MailClient) SendMail(from, to, cc, bcc string, subject, bodyType, body
 	m.SetBody(bodyType, bodyString)
 	// Send the email to Bob, Cora and Dan.
 	if err := mc.client.Send(from, rec, m); err != nil {
-		DefaultLogger().Error("send mail failed, %v", zap.Error(err))
+		logk.Error("send mail failed, %v", zap.Error(err))
 	}
 }
 
@@ -70,12 +71,12 @@ var client *MailClient
 
 func Dial(host string, port int, username, password string) {
 	if client != nil {
-		DefaultLogger().Error("global mail client already exists.")
+		logk.Error("global mail client already exists.")
 		return
 	}
 	//
 	if c, e := NewMailSender(host, port, username, password); e != nil {
-		DefaultLogger().Panic("create global mail client failed. %v", zap.Error(e))
+		logk.Fatal("create global mail client failed. %v", zap.Error(e))
 	} else {
 		client = c
 	}
@@ -83,7 +84,7 @@ func Dial(host string, port int, username, password string) {
 
 func SendMail(from, to, cc, bcc string, subject, bodyType, bodyString string) {
 	if client == nil {
-		DefaultLogger().Error("global mail client has not been created.")
+		logk.Error("global mail client has not been created.")
 		return
 	}
 	client.SendMail(from, to, cc, bcc, subject, bodyType, bodyString)
@@ -92,19 +93,19 @@ func SendMail(from, to, cc, bcc string, subject, bodyType, bodyString string) {
 func DirectSendMail(host string, port int, username, password string,
 	from, to, cc, bcc string, subject, bodyType, bodyString string) {
 	if ValidMail(from) == false {
-		DefaultLogger().Error("missing mail's sender")
+		logk.Error("missing mail's sender")
 		return
 	}
 	if ValidMail(to) == false {
-		DefaultLogger().Error("missing mail's to")
+		logk.Error("missing mail's to")
 		return
 	}
 	if len(cc) > 0 && ValidMail(cc) == false {
-		DefaultLogger().Error("unknown mail's cc. %s", zap.String("cc", cc))
+		logk.Error("unknown mail's cc. %s", zap.String("cc", cc))
 		return
 	}
 	if len(bcc) > 0 && ValidMail(bcc) == false {
-		DefaultLogger().Error("unknown mail's bcc. %s", zap.String("bcc", bcc))
+		logk.Error("unknown mail's bcc. %s", zap.String("bcc", bcc))
 		return
 	}
 	m := gomail.NewMessage()
@@ -122,6 +123,6 @@ func DirectSendMail(host string, port int, username, password string,
 	d := gomail.NewDialer(host, port, username, password)
 	// Send the email to Bob, Cora and Dan.
 	if err := d.DialAndSend(m); err != nil {
-		DefaultLogger().Error("send mail failed, %v", zap.Error(err))
+		logk.Error("send mail failed, %v", zap.Error(err))
 	}
 }

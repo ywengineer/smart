@@ -2,7 +2,7 @@ package smart
 
 import (
 	"github.com/bytedance/gopkg/lang/fastrand"
-	"github.com/ywengineer/smart/utility"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"sync/atomic"
 )
@@ -34,7 +34,7 @@ func parseLoadBalance(lb string) LoadBalance {
 	case "rr":
 		return RoundRobin
 	}
-	utility.DefaultLogger().Warn("unknown load balance, default to RoundRobin", zap.String("lb", lb))
+	logk.Warn("unknown load balance, default to RoundRobin", zap.String("lb", lb))
 	return RoundRobin
 }
 

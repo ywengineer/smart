@@ -2,8 +2,8 @@ package smart
 
 import (
 	"context"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/ywengineer/smart/message"
-	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"regexp"
 	"testing"
@@ -31,15 +31,15 @@ func (m *TestModule) Name() string {
 }
 
 func (m *TestModule) RegisterAccount1001(ctx context.Context, channel Channel, req *Req) {
-	utility.DefaultLogger().Info("RegisterAccount1001 invoked", zap.Any("req", *req))
+	logk.Info("RegisterAccount1001 invoked", zap.Any("req", *req))
 }
 
 func (m *TestModule) FindFriend1002(ctx context.Context, channel Channel, req *Req) {
-	utility.DefaultLogger().Info("FindFriend1002 invoked", zap.Any("req", *req))
+	logk.Info("FindFriend1002 invoked", zap.Any("req", *req))
 }
 
 func (m *TestModule) UseItem1003(ctx context.Context, channel Channel, req *Req) *message.ProtocolMessage {
-	utility.DefaultLogger().Info("UseItem1003 invoked", zap.Any("req", *req))
+	logk.Info("UseItem1003 invoked", zap.Any("req", *req))
 	return &message.ProtocolMessage{
 		Seq:     1,
 		Route:   1005,
@@ -50,7 +50,7 @@ func (m *TestModule) UseItem1003(ctx context.Context, channel Channel, req *Req)
 }
 
 func (m *TestModule) StartFight1004(ctx context.Context, channel Channel, req *Req) *message.ProtocolMessage {
-	utility.DefaultLogger().Info("StartFight1004 invoked", zap.Any("req", *req))
+	logk.Info("StartFight1004 invoked", zap.Any("req", *req))
 	return &message.ProtocolMessage{
 		Seq:     2,
 		Route:   1005,
@@ -61,7 +61,7 @@ func (m *TestModule) StartFight1004(ctx context.Context, channel Channel, req *R
 }
 
 func (m *TestModule) StartFightRes1005(ctx context.Context, channel Channel, req *Req) {
-	utility.DefaultLogger().Info("StartFightRes1005 invoked", zap.Any("req", *req))
+	logk.Info("StartFightRes1005 invoked", zap.Any("req", *req))
 }
 
 func TestRegisterModule(t *testing.T) {

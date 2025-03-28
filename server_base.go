@@ -5,9 +5,9 @@ import (
 	"encoding/binary"
 	"github.com/pkg/errors"
 	"github.com/ywengineer/smart-kit/pkg/loaders"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/ywengineer/smart/codec"
 	"github.com/ywengineer/smart/pkg"
-	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"sync"
 	"sync/atomic"
@@ -44,10 +44,10 @@ func (s *baseServer) ticker() {
 		}
 		if p := recover(); p != nil {
 			if s.status == running {
-				utility.DefaultLogger().Error("panic on server tick, restart it.", zap.Any("recover", p))
+				logk.Error("panic on server tick, restart it.", zap.Any("recover", p))
 				go s.ticker()
 			} else {
-				utility.DefaultLogger().Error("panic on server tick", zap.Any("recover", p))
+				logk.Error("panic on server tick", zap.Any("recover", p))
 			}
 		}
 	}()
@@ -94,12 +94,12 @@ func (s *baseServer) onChannelOpen(conn pkg.Conn) {
 	// check byte order
 	if channel.byteOrder == nil {
 		channel.byteOrder = binary.LittleEndian
-		utility.DefaultLogger().Warn("byteOrder not set, default is LittleEndian")
+		logk.Warn("byteOrder not set, default is LittleEndian")
 	}
 	// check codec, default codec
 	if channel.codec == nil {
 		channel.codec = codec.Byte()
-		utility.DefaultLogger().Warn("codec not set, default is byte")
+		logk.Warn("codec not set, default is byte")
 	}
 	s.channels.Store(channel.fd, channel)
 	atomic.AddInt32(&s.channelCount, 1)
@@ -152,10 +152,10 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 	// start listen loop ...
 	go func() {
 		//
-		utility.DefaultLogger().Info("serve run at", zap.Any("address", s.conf.Network+"://"+s.conf.Address))
+		logk.Info("serve run at", zap.Any("address", s.conf.Network+"://"+s.conf.Address))
 		//
 		if err := s.holder.onSpin(); err != nil {
-			utility.DefaultLogger().Panic("serve listener error", zap.Error(err))
+			logk.Fatal("serve listener error", zap.Error(err))
 			// start failed or serve quit
 			_ = s.Shutdown()
 		}
@@ -165,18 +165,18 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 	// watch config
 	if err := s.confLoader.Watch(s.ctx, func(conf string) error {
 		if err := s.confLoader.Unmarshal([]byte(conf), s.conf); err != nil {
-			utility.DefaultLogger().Error("unmarshal configuration when watch", zap.Error(err))
+			logk.Error("unmarshal configuration when watch", zap.Error(err))
 			return err
 		}
-		utility.DefaultLogger().Debug("server config changed", zap.Any("conf", *s.conf))
+		logk.Debug("server config changed", zap.Any("conf", *s.conf))
 		if s.onConfigChange != nil {
 			s.onConfigChange(*s.conf)
 		}
 		return nil
 	}); err != nil {
-		utility.DefaultLogger().Error("server config watcher start error", zap.Error(err))
+		logk.Error("server config watcher start error", zap.Error(err))
 	} else {
-		utility.DefaultLogger().Debug("server config watcher started")
+		logk.Debug("server config watcher started")
 	}
 	return s.ctx, nil
 }

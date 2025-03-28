@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/ywengineer/smart/codec"
 	"github.com/ywengineer/smart/message"
 	"github.com/ywengineer/smart/pkg"
-	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
 	"sync"
 )
@@ -66,7 +66,7 @@ func (h *defaultChannel) send(data []byte) error {
 	writer := h.conn.Writer()
 	defer writer.Flush()
 	if _, err := writer.WriteBinary(data); err != nil {
-		utility.DefaultLogger().Error("write data error", zap.Error(err))
+		logk.Error("write data error", zap.Error(err))
 		return err
 	}
 	return nil

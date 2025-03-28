@@ -11,7 +11,7 @@ require (
 	github.com/cloudwego/netpoll v0.6.5
 	github.com/panjf2000/gnet/v2 v2.7.2
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.7.1
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/stretchr/testify v1.10.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/xuri/excelize/v2 v2.9.0
@@ -46,6 +46,7 @@ require (
 	github.com/aliyun/aliyun-secretsmanager-client-go v1.1.5 // indirect
 	github.com/aliyun/credentials-go v1.4.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clbanning/mxj/v2 v2.5.5 // indirect
@@ -54,6 +55,7 @@ require (
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
+	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -74,7 +76,6 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.4 // indirect
-	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

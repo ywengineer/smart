@@ -2,6 +2,7 @@ package utility
 
 import (
 	"context"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,12 +28,12 @@ func Watch(ctx context.Context, notify chan<- bool) {
 		for {
 			select {
 			case <-ctx.Done():
-				DefaultLogger().Info("terminating: context cancelled")
+				logk.Info("terminating: context cancelled")
 				notify <- true
 				break stop
 			case <-ticker.C:
 				if ctx.Err() != nil {
-					DefaultLogger().Info("terminating: context cancelled")
+					logk.Info("terminating: context cancelled")
 					notify <- true
 					break stop
 				}

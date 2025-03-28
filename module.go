@@ -3,7 +3,7 @@ package smart
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/smart/utility"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"reflect"
 	"strconv"
@@ -32,7 +32,7 @@ func RegisterModule(module Module) error {
 		mSignature := method.Type()
 		handlerMatched := handlerSignatureRegexp.FindStringSubmatch(mName)
 		if len(handlerMatched) < 2 { // method signature must contains route code
-			utility.DefaultLogger().Debug("not a request handler", zap.String("method", mName), zap.String("regexp", handlerRegexp))
+			logk.Debug("not a request handler", zap.String("method", mName), zap.String("regexp", handlerRegexp))
 			continue
 		}
 		if mSignature.NumIn() != 3 {

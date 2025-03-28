@@ -5,6 +5,7 @@ import (
 	"github.com/cloudwego/netpoll"
 	"github.com/pkg/errors"
 	"github.com/ywengineer/smart-kit/pkg/loaders"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/ywengineer/smart/pkg"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
@@ -47,12 +48,12 @@ func _newServer(loader loaders.SmartLoader, useGNet bool, initializer ...Channel
 	if len(initializer) == 0 {
 		return nil, errors.New("initializer of channel can not be empty")
 	}
-	// load loader
-	conf := &loader.Conf{}
+	// load loaders
+	conf := &loaders.Conf{}
 	if err := loader.Load(conf); err != nil {
 		return nil, errors.WithMessage(err, "load server loader error")
 	} else {
-		utility.DefaultLogger().Debug("new smart server with conf", zap.Any("conf", *conf))
+		logk.Debug("new smart server with conf", zap.Any("conf", *conf))
 	}
 	worker, _ := NewWorkerManager(utility.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
 	if useGNet {
@@ -95,15 +96,15 @@ func (s *defaultServer) onSpin() error {
 	var err error
 	if goos := runtime.GOOS; goos == "windows" {
 		if listener, err = net.Listen(s.conf.Network, s.conf.Address); err != nil {
-			utility.DefaultLogger().Panic("create server listener on windows error", zap.Error(err))
+			logk.Fatal("create server listener on windows error", zap.Error(err))
 		}
 	} else if listener, err = netpoll.CreateListener(s.conf.Network, s.conf.Address); err != nil {
-		utility.DefaultLogger().Panic("create server listener error", zap.Error(err))
+		logk.Fatal("create server listener error", zap.Error(err))
 	}
 	eventLoop, _ := netpoll.NewEventLoop(s.onConnRead, netpoll.WithOnPrepare(s.onConnPrepare), netpoll.WithOnConnect(s.onConnOpen))
 	s.eventLoop = eventLoop
 	//
-	utility.DefaultLogger().Info("serve run at", zap.Any("address", s.conf.Network+"://"+s.conf.Address))
+	logk.Info("serve run at", zap.Any("address", s.conf.Network+"://"+s.conf.Address))
 	return s.eventLoop.Serve(listener)
 }
 
@@ -119,7 +120,7 @@ func (s *defaultServer) onConnRead(_ context.Context, conn netpoll.Connection) e
 	fd := conn.(netpoll.Conn).Fd()
 	if err := s.onChannelRead(fd); err != nil {
 		if errors.Is(err, ErrNotRegisteredChannel) {
-			utility.DefaultLogger().Error("not registered channel.", zap.Int("fd", fd))
+			logk.Error("not registered channel.", zap.Int("fd", fd))
 			_ = conn.Close()
 		}
 		return err

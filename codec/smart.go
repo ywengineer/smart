@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/cloudwego/netpoll"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/ywengineer/smart/message"
 	"github.com/ywengineer/smart/pkg"
 	"github.com/ywengineer/smart/utility"
@@ -88,7 +89,7 @@ func (c *smartCodec) Decode(reader pkg.Reader, i interface{}) error {
 	_ = int(data[7])                       // flags
 	// pkg size reach max size, close it
 	if pkgSize >= 65535 {
-		utility.DefaultLogger().Error("msg is too big.", zap.Int("size", pkgSize))
+		logk.Error("msg is too big.", zap.Int("size", pkgSize))
 		return ErrTooBig
 	}
 	//
@@ -103,7 +104,7 @@ func (c *smartCodec) Decode(reader pkg.Reader, i interface{}) error {
 		} else {
 			_ = reader.Release()
 			if err := proto.Unmarshal(pkg, req); err != nil {
-				utility.DefaultLogger().Error("failed to decode bytes to ProtocolMessage.", zap.Error(err))
+				logk.Error("failed to decode bytes to ProtocolMessage.", zap.Error(err))
 				return err
 			}
 			return nil

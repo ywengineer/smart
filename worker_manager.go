@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/bytedance/gopkg/util/gopool"
-	"github.com/ywengineer/smart/utility"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 )
 
@@ -27,7 +27,7 @@ func NewSingleWorker(name string, panicHandler func(context.Context, interface{}
 // NewWorkerManager create default worker manager for process client channel
 func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
 	if poolSize < 1 {
-		utility.DefaultLogger().Error("set invalid poolSize", zap.Int("poolSize", poolSize))
+		logk.Error("set invalid poolSize", zap.Int("poolSize", poolSize))
 		return nil, fmt.Errorf("set invalid poolSize[%d]", poolSize)
 	}
 	manager := &defaultWorkerManager{}
@@ -49,7 +49,7 @@ func (m *defaultWorkerManager) Pick(id int) Worker {
 }
 
 func (m *defaultWorkerManager) errorHandler(ctx context.Context, err interface{}) {
-	utility.DefaultLogger().Error("process worker task error", zap.Any("error", err))
+	logk.Error("process worker task error", zap.Any("error", err))
 }
 
 func (m *defaultWorkerManager) Status() interface{} {
