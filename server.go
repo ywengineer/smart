@@ -55,7 +55,7 @@ func _newServer(loader loaders.SmartLoader, useGNet bool, initializer ...Channel
 	} else {
 		logk.Debug("new smart server with conf", zap.Any("conf", *conf))
 	}
-	worker, _ := NewWorkerManager(utilk.MaxInt(conf.Workers, 1), parseLoadBalance(conf.WorkerLoadBalance))
+	worker := NewWorkerManager(utilk.MaxInt(conf.Workers, 0), parseLoadBalance(conf.WorkerLoadBalance))
 	if useGNet {
 		srv := &gnetServer{
 			baseServer: &baseServer{

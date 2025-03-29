@@ -58,7 +58,7 @@ func TestGNetServer(t *testing.T) {
 	network, addr := "tcp", "127.0.0.1:12345"
 
 	srv, err := NewGNetServer(
-		loader2.NewValueLoader(&loader2.Conf{Network: network, Address: addr, Workers: 1, WorkerLoadBalance: "rr"}),
+		loader2.NewValueLoader(&loader2.Conf{Network: network, Address: addr, WorkerLoadBalance: "rr"}),
 		WithByteOrder(func() binary.ByteOrder {
 			return binary.LittleEndian
 		}),

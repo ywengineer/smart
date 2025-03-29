@@ -6,6 +6,7 @@ import (
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
+	"runtime"
 )
 
 type WorkerManager interface {
@@ -25,10 +26,10 @@ func NewSingleWorker(name string, panicHandler func(context.Context, interface{}
 }
 
 // NewWorkerManager create default worker manager for process client channel
-func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
+func NewWorkerManager(poolSize int, lb LoadBalance) WorkerManager {
 	if poolSize < 1 {
-		logk.Error("set invalid poolSize", zap.Int("poolSize", poolSize))
-		return nil, fmt.Errorf("set invalid poolSize [%d]", poolSize)
+		poolSize = runtime.NumCPU() * 2
+		logk.Warn("invalid poolSize, will set core * 2", zap.Int("poolSize", poolSize))
 	}
 	logk.Infof("create worker manager with pool size [%d]", poolSize)
 	manager := &defaultWorkerManager{}
@@ -36,7 +37,7 @@ func NewWorkerManager(poolSize int, lb LoadBalance) (WorkerManager, error) {
 		manager.workers = append(manager.workers, NewSingleWorker(fmt.Sprintf("smart-worker-%d", idx), manager.errorHandler))
 	}
 	manager.balance = newLoadBalance(lb, manager.workers)
-	return manager, nil
+	return manager
 }
 
 type defaultWorkerManager struct {
