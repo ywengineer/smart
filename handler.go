@@ -87,9 +87,9 @@ func (hm *handlerManager) findHandlerDefinition(msgCode int32) *handlerDefinitio
 
 func (hm *handlerManager) addHandlerDefinition(def *handlerDefinition) {
 	if _, ok := hm._handlerMap[int32(def.messageCode)]; ok {
-		logk.Warn("handler already exists", zap.Int("msgCode", def.messageCode))
+		logk.Warnf("handler for message code [%d] already exists", def.messageCode)
 	} else {
-		logk.Debug("register a new method handler", zap.Int("msgCode", def.messageCode))
+		logk.Debugf("register a new method handler for message code: %d", def.messageCode)
 		def.inPool = &sync.Pool{
 			New: func(hd *handlerDefinition) func() interface{} {
 				return func() interface{} {

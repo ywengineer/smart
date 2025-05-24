@@ -29,7 +29,7 @@ func NewSingleWorker(name string, panicHandler func(context.Context, interface{}
 func NewWorkerManager(poolSize int, lb LoadBalance) WorkerManager {
 	if poolSize < 1 {
 		poolSize = runtime.NumCPU() * 2
-		logk.Warn("invalid poolSize, will set core * 2", zap.Int("poolSize", poolSize))
+		logk.Warnf("invalid poolSize, will set core * 2 = %d", poolSize)
 	}
 	logk.Infof("create worker manager with pool size [%d]", poolSize)
 	manager := &defaultWorkerManager{}
