@@ -32,7 +32,7 @@ type serverHolder interface {
 // Server smart server interface
 type Server interface {
 	Serve(ctx context.Context) (context.Context, error)
-	Shutdown() error
+	Shutdown(ctx context.Context) error
 	ConnCount() int32
 	GetChannel(id int) (Channel, bool)
 	SetOnConfigChange(callback func(conf loaders.Conf))

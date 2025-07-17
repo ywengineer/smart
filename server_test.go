@@ -3,6 +3,7 @@ package smart
 import (
 	"context"
 	"encoding/binary"
+	"github.com/go-spring/spring-core/gs"
 	"github.com/stretchr/testify/assert"
 	loader2 "github.com/ywengineer/smart-kit/pkg/loaders"
 	"github.com/ywengineer/smart-kit/pkg/nacos"
@@ -48,7 +49,7 @@ func TestServerWithNacos(t *testing.T) {
 	//
 	_ = <-utilk.WatchQuitSignal()
 	// 5. wait smart server shutdown
-	t.Logf("smart nacos server was stopped. %v", srv.Shutdown())
+	t.Logf("smart nacos server was stopped. %v", srv.Shutdown(ctx))
 }
 
 func TestGNetServer(t *testing.T) {
@@ -78,6 +79,7 @@ func TestGNetServer(t *testing.T) {
 	srv.SetOnTick(func(ctx context.Context) time.Duration {
 		return time.Second
 	})
+	gs.Run()
 	// 4. start smart server
 	ctx, err := srv.Serve(context.Background())
 	assert.Nil(t, err)
@@ -88,7 +90,7 @@ func TestGNetServer(t *testing.T) {
 	//
 	_ = <-utilk.WatchQuitSignal()
 	t.Log("smart server will be stop.")
-	err = srv.Shutdown()
+	err = srv.Shutdown(ctx)
 	// 5. wait smart server shutdown
 	t.Logf("smart server was stopped. %v", err)
 }

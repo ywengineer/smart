@@ -3,6 +3,7 @@ package smart
 import (
 	"context"
 	"encoding/binary"
+	"github.com/go-spring/spring-core/gs"
 	"github.com/pkg/errors"
 	"github.com/ywengineer/smart-kit/pkg/loaders"
 	"github.com/ywengineer/smart-kit/pkg/logk"
@@ -126,7 +127,7 @@ func (s *baseServer) SetOnTick(tick func(ctx context.Context) time.Duration) {
 	s.onTick = tick
 }
 
-func (s *baseServer) Shutdown() error {
+func (s *baseServer) Shutdown(ctx context.Context) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if s.status != running {
@@ -136,6 +137,13 @@ func (s *baseServer) Shutdown() error {
 	s.status = stopped
 	s.shutdownHook()
 	return s.holder.onShutdown()
+}
+
+func (s *baseServer) ListenAndServe(sig gs.ReadySignal) error {
+	// start smart server
+	_, err := s.Serve(context.Background())
+	<-sig.TriggerAndWait()
+	return err
 }
 
 func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
@@ -157,7 +165,7 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 		if err := s.holder.onSpin(); err != nil {
 			logk.Fatal("serve listener error", zap.Error(err))
 			// start failed or serve quit
-			_ = s.Shutdown()
+			_ = s.Shutdown(s.ctx)
 		}
 	}()
 	// tick

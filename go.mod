@@ -18,6 +18,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/text v0.26.0
 	google.golang.org/protobuf v1.36.6
+	github.com/go-spring/spring-core v1.2.1
 )
 
 require (
