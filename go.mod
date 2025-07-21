@@ -1,6 +1,8 @@
-module github.com/ywengineer/smart
+module gitee.com/ywengineer/smart
 
-go 1.23.6
+go 1.24
+
+toolchain go1.24.3
 
 replace github.com/ywengineer/smart-kit v0.0.0 => ../
 
@@ -9,6 +11,7 @@ require (
 	github.com/bytedance/sonic v1.13.3
 	github.com/cloudwego/fastpb v0.0.5
 	github.com/cloudwego/netpoll v0.7.1
+	github.com/go-spring/spring-core v1.2.1
 	github.com/panjf2000/gnet/v2 v2.9.1
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.10.0
@@ -16,9 +19,8 @@ require (
 	github.com/xuri/excelize/v2 v2.9.1
 	github.com/ywengineer/smart-kit v0.0.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/text v0.26.0
+	golang.org/x/text v0.27.0
 	google.golang.org/protobuf v1.36.6
-	github.com/go-spring/spring-core v1.2.1
 )
 
 require (
@@ -87,7 +89,7 @@ require (
 	golang.org/x/arch v0.15.0 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
