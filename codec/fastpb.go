@@ -2,8 +2,8 @@ package codec
 
 import (
 	"errors"
+	"gitee.com/ywengineer/smart/pkg"
 	"github.com/cloudwego/fastpb"
-	"github.com/ywengineer/smart/pkg"
 )
 
 var fpbc = &fastpbCodec{}

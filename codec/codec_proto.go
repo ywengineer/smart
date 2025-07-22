@@ -2,7 +2,7 @@ package codec
 
 import (
 	"fmt"
-	"github.com/ywengineer/smart/pkg"
+	"gitee.com/ywengineer/smart/pkg"
 	"google.golang.org/protobuf/proto"
 )
 

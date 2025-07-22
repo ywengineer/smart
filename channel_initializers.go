@@ -3,8 +3,8 @@ package smart
 import (
 	"context"
 	"encoding/binary"
-	"github.com/ywengineer/smart/codec"
-	"github.com/ywengineer/smart/message"
+	"gitee.com/ywengineer/smart/codec"
+	"gitee.com/ywengineer/smart/message"
 )
 
 type ChannelHandler interface {

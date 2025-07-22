@@ -2,8 +2,8 @@ package codec
 
 import (
 	"bytes"
+	"gitee.com/ywengineer/smart/pkg"
 	"github.com/vmihailenco/msgpack/v5"
-	"github.com/ywengineer/smart/pkg"
 )
 
 var msgpackc = &msgpackCodec{}

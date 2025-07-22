@@ -2,8 +2,8 @@ package smart
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart/message"
 	"github.com/ywengineer/smart-kit/pkg/logk"
-	"github.com/ywengineer/smart/message"
 	"go.uber.org/zap"
 	"regexp"
 	"testing"

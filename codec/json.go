@@ -1,9 +1,9 @@
 package codec
 
 import (
+	"gitee.com/ywengineer/smart/pkg"
 	"github.com/bytedance/sonic"
 	"github.com/bytedance/sonic/decoder"
-	"github.com/ywengineer/smart/pkg"
 )
 
 var jsonc = &jsonCodec{}

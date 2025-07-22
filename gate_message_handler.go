@@ -2,7 +2,7 @@ package smart
 
 import (
 	"context"
-	"github.com/ywengineer/smart/message"
+	"gitee.com/ywengineer/smart/message"
 	"strconv"
 )
 

@@ -3,11 +3,11 @@ package codec
 import (
 	"encoding/binary"
 	"errors"
+	"gitee.com/ywengineer/smart/message"
+	"gitee.com/ywengineer/smart/pkg"
 	"github.com/cloudwego/netpoll"
 	"github.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/ywengineer/smart-kit/pkg/utilk"
-	"github.com/ywengineer/smart/message"
-	"github.com/ywengineer/smart/pkg"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"sync"

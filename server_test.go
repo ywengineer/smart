@@ -3,13 +3,12 @@ package smart
 import (
 	"context"
 	"encoding/binary"
-	"github.com/go-spring/spring-core/gs"
+	"gitee.com/ywengineer/smart/codec"
+	"gitee.com/ywengineer/smart/message"
 	"github.com/stretchr/testify/assert"
 	loader2 "github.com/ywengineer/smart-kit/pkg/loaders"
 	"github.com/ywengineer/smart-kit/pkg/nacos"
 	"github.com/ywengineer/smart-kit/pkg/utilk"
-	"github.com/ywengineer/smart/codec"
-	"github.com/ywengineer/smart/message"
 	"testing"
 	"time"
 )
@@ -79,7 +78,6 @@ func TestGNetServer(t *testing.T) {
 	srv.SetOnTick(func(ctx context.Context) time.Duration {
 		return time.Second
 	})
-	gs.Run()
 	// 4. start smart server
 	ctx, err := srv.Serve(context.Background())
 	assert.Nil(t, err)
