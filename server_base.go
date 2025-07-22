@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"gitee.com/ywengineer/smart/codec"
+	"gitee.com/ywengineer/smart/message"
 	"gitee.com/ywengineer/smart/pkg"
 	"github.com/go-spring/spring-core/gs"
 	"github.com/pkg/errors"
@@ -14,6 +15,14 @@ import (
 	"sync/atomic"
 	"time"
 )
+
+var emptyHeader = map[string]string{}
+var closedMsg = &message.ProtocolMessage{
+	Route:   -1,
+	Header:  emptyHeader,
+	Codec:   message.Codec_JSON,
+	Payload: []byte(`{}`),
+}
 
 type baseServer struct {
 	holder         serverHolder
@@ -71,6 +80,9 @@ func (s *baseServer) onChannelRead(fd int) error {
 	// channel not registered
 	if channel, ok := s.channels.Load(fd); ok == false {
 		return ErrNotRegisteredChannel
+	} else if s.status == stopping || s.status == stopped {
+		_ = channel.(*defaultChannel).Send(closedMsg)
+		return ErrServerStopped
 	} else { // registered
 		return channel.(*defaultChannel).onMessageRead()
 	}
@@ -102,9 +114,14 @@ func (s *baseServer) onChannelOpen(conn pkg.Conn) {
 		channel.codec = codec.Byte()
 		logk.Warn("codec not set, default is byte")
 	}
-	s.channels.Store(channel.fd, channel)
-	atomic.AddInt32(&s.channelCount, 1)
-	channel.onOpen()
+	if s.status == running {
+		s.channels.Store(channel.fd, channel)
+		atomic.AddInt32(&s.channelCount, 1)
+		channel.onOpen()
+	} else {
+		_ = channel.Send(closedMsg)
+		_ = channel.Close()
+	}
 }
 
 func (s *baseServer) ConnCount() int32 {
@@ -134,8 +151,25 @@ func (s *baseServer) Shutdown(ctx context.Context) error {
 		return errors.New("mr. smart server is not prepared or already stopped")
 	}
 	// can not start again.
-	s.status = stopped
+	s.status = stopping
+	ts := time.Now()
+	tick := time.NewTicker(time.Second)
+loop:
+	for {
+		select {
+		case <-tick.C:
+			if s.workerManager.RunningWorker() > 0 {
+				logk.Info("wait for all task to finish.")
+			} else {
+				break loop
+			}
+		}
+	}
+	tick.Stop()
+	logk.Infof("server stopped, cost: %s", time.Since(ts))
 	s.shutdownHook()
+	s.status = stopped
+	// close all channels
 	return s.holder.onShutdown()
 }
 

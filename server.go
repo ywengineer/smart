@@ -15,12 +15,14 @@ import (
 )
 
 var ErrNotRegisteredChannel = errors.New("registered channel, close it.")
+var ErrServerStopped = errors.New("server is stopped")
 
 type status int32
 
 const (
 	prepared status = iota
 	running
+	stopping
 	stopped
 )
 

@@ -11,12 +11,12 @@ import (
 
 type WorkerManager interface {
 	Pick(id int) Worker
-	Status() interface{}
+	RunningWorker() int
 }
 
 type Worker interface {
 	Run(ctx context.Context, f func())
-	Status() interface{}
+	Running() bool
 }
 
 func NewSingleWorker(name string, panicHandler func(context.Context, interface{})) Worker {
@@ -54,8 +54,14 @@ func (m *defaultWorkerManager) errorHandler(ctx context.Context, err interface{}
 	logk.Error("process worker task error", zap.Any("error", err))
 }
 
-func (m *defaultWorkerManager) Status() interface{} {
-	return nil
+func (m *defaultWorkerManager) RunningWorker() int {
+	n := 0
+	for _, worker := range m.workers {
+		if worker.Running() {
+			n += 1
+		}
+	}
+	return n
 }
 
 type defaultWorker struct {
@@ -70,6 +76,6 @@ func (w *defaultWorker) Name() string {
 	return w.runner.Name()
 }
 
-func (w *defaultWorker) Status() interface{} {
-	return nil
+func (w *defaultWorker) Running() bool {
+	return w.runner.WorkerCount() > 0
 }
