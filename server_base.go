@@ -160,7 +160,7 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 	// start listen loop ...
 	go func() {
 		//
-		logk.Info("serve run at", zap.Any("address", s.conf.Network+"://"+s.conf.Address))
+		logk.Infof("serve run at: %s", s.conf.Network+"://"+s.conf.Address)
 		//
 		if err := s.holder.onSpin(); err != nil {
 			logk.Fatal("serve listener error", zap.Error(err))
@@ -176,7 +176,7 @@ func (s *baseServer) Serve(ctx context.Context) (context.Context, error) {
 			logk.Error("unmarshal configuration when watch", zap.Error(err))
 			return err
 		}
-		logk.Debug("server config changed", zap.Any("conf", *s.conf))
+		logk.CtxDebugf(logk.With(s.conf), "server config changed")
 		if s.onConfigChange != nil {
 			s.onConfigChange(*s.conf)
 		}

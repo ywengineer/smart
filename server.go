@@ -53,7 +53,7 @@ func _newServer(loader loaders.SmartLoader, useGNet bool, initializer ...Channel
 	if err := loader.Load(conf); err != nil {
 		return nil, errors.WithMessage(err, "load server loader error")
 	} else {
-		logk.Debug("new smart server with conf", zap.Any("conf", *conf))
+		logk.CtxDebugf(logk.With(conf), "new smart server with conf")
 	}
 	worker := NewWorkerManager(utilk.MaxInt(conf.Workers, 0), parseLoadBalance(conf.WorkerLoadBalance))
 	if useGNet {
@@ -104,7 +104,6 @@ func (s *defaultServer) onSpin() error {
 	eventLoop, _ := netpoll.NewEventLoop(s.onConnRead, netpoll.WithOnPrepare(s.onConnPrepare), netpoll.WithOnConnect(s.onConnOpen))
 	s.eventLoop = eventLoop
 	//
-	logk.Info("serve run at", zap.Any("address", s.conf.Network+"://"+s.conf.Address))
 	return s.eventLoop.Serve(listener)
 }
 
