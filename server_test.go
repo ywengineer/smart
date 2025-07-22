@@ -3,12 +3,12 @@ package smart
 import (
 	"context"
 	"encoding/binary"
+	loader2 "gitee.com/ywengineer/smart-kit/pkg/loaders"
+	"gitee.com/ywengineer/smart-kit/pkg/nacos"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"gitee.com/ywengineer/smart/codec"
 	"gitee.com/ywengineer/smart/message"
 	"github.com/stretchr/testify/assert"
-	loader2 "github.com/ywengineer/smart-kit/pkg/loaders"
-	"github.com/ywengineer/smart-kit/pkg/nacos"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"testing"
 	"time"
 )

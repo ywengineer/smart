@@ -1,8 +1,8 @@
 package smart
 
 import (
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/bytedance/gopkg/lang/fastrand"
-	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"sync/atomic"
 )

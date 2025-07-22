@@ -2,10 +2,10 @@ package smart
 
 import (
 	"fmt"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart/pkg"
 	"github.com/panjf2000/gnet/v2"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"sync/atomic"
 	"time"

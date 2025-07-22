@@ -1,9 +1,9 @@
 package smart
 
 import (
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"gitee.com/ywengineer/smart/codec"
 	"gitee.com/ywengineer/smart/message"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"sync"
 	"testing"
 )

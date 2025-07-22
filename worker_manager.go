@@ -3,8 +3,8 @@ package smart
 import (
 	"context"
 	"fmt"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/bytedance/gopkg/util/gopool"
-	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"runtime"
 )
