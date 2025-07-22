@@ -154,11 +154,17 @@ func (s *baseServer) Shutdown(ctx context.Context) error {
 	s.status = stopping
 	ts := time.Now()
 	tick := time.NewTicker(time.Second)
+	tickCycle := 0
 loop:
 	for {
 		select {
 		case <-tick.C:
 			if s.workerManager.RunningWorker() > 0 {
+				if tickCycle >= 600 {
+					logk.Warnf("wait for finish all task exceed the deadline 10M, running worker: %d", s.workerManager.RunningWorker())
+					break loop
+				}
+				tickCycle++
 				logk.Info("wait for all task to finish.")
 			} else {
 				break loop
