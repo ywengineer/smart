@@ -68,6 +68,10 @@ func (s *baseServer) ticker() {
 		} else {
 			timer.Reset(delay)
 		}
+		if s.status > running { // not running
+			logk.Infof("server will be shutdown soon. disable heartbeat")
+			break
+		}
 		select {
 		case <-s.ctx.Done():
 			break
