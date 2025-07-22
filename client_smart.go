@@ -2,9 +2,9 @@ package smart
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart/pkg"
 	"github.com/cloudwego/netpoll"
-	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"strconv"
 	"sync/atomic"

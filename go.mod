@@ -4,8 +4,6 @@ go 1.24
 
 toolchain go1.24.3
 
-replace github.com/ywengineer/smart-kit v0.0.1 => ../
-
 require (
 	github.com/bytedance/gopkg v0.1.2
 	github.com/bytedance/sonic v1.13.3
@@ -17,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/xuri/excelize/v2 v2.9.1
-	github.com/ywengineer/smart-kit v0.0.1
+	gitee.com/ywengineer/smart-kit 57ac1bd6b89d0ba4a99be4c11440dbe26ef3398b
 	go.uber.org/zap v1.27.0
 	golang.org/x/text v0.27.0
 	google.golang.org/protobuf v1.36.6
