@@ -2,16 +2,21 @@ package smart
 
 import (
 	"context"
+	"fmt"
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart/message"
-	"go.uber.org/zap"
 	"regexp"
 	"testing"
 )
 
 type Req struct {
 	Ping  int    `json:"ping"`
+	Pong  int    `json:"pong"`
 	Extra string `json:"extra"`
+}
+
+func (r *Req) String() string {
+	return fmt.Sprintf("ping: %d, pong: %d, extra: %s", r.Ping, r.Pong, r.Extra)
 }
 
 func (r *Req) Reset() {
@@ -31,15 +36,15 @@ func (m *TestModule) Name() string {
 }
 
 func (m *TestModule) RegisterAccount1001(ctx context.Context, channel Channel, req *Req) {
-	logk.Info("RegisterAccount1001 invoked", zap.Any("req", *req))
+	logk.Infof("RegisterAccount1001 invoked: %s", req)
 }
 
 func (m *TestModule) FindFriend1002(ctx context.Context, channel Channel, req *Req) {
-	logk.Info("FindFriend1002 invoked", zap.Any("req", *req))
+	logk.Infof("FindFriend1002 invoked: %s", req)
 }
 
 func (m *TestModule) UseItem1003(ctx context.Context, channel Channel, req *Req) *message.ProtocolMessage {
-	logk.Info("UseItem1003 invoked", zap.Any("req", *req))
+	logk.Infof("UseItem1003 invoked: %s", req)
 	return &message.ProtocolMessage{
 		Seq:     1,
 		Route:   1005,
@@ -50,12 +55,12 @@ func (m *TestModule) UseItem1003(ctx context.Context, channel Channel, req *Req)
 }
 
 func (m *TestModule) StartFight1004(ctx context.Context, channel Channel, req *Req) (int, []byte) {
-	logk.Info("StartFight1004 invoked", zap.Any("req", *req))
+	logk.Infof("StartFight1004 invoked: %s", req)
 	return 1005, []byte(`{"pong":1005, "extra": "from server: 1004"}`)
 }
 
 func (m *TestModule) StartFightRes1005(ctx context.Context, channel Channel, req *Req) {
-	logk.Info("StartFightRes1005 invoked", zap.Any("req", *req))
+	logk.Infof("StartFightRes1005 invoked: %s", req)
 }
 
 func TestRegisterModule(t *testing.T) {

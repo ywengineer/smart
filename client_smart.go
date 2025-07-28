@@ -53,24 +53,20 @@ func NewSmartClient(ctx context.Context, network, addr string, initializers []Ch
 	// 自动关闭
 	if autoClose {
 		go func() {
+		stop:
 			for {
 				select {
 				case <-ctx.Done():
-					logk.Info(
-						"client will be close, because of client running context is finished",
-						zap.String("client", scId),
-						zap.Error(channel.Close()))
-					return
+					logk.Infof("client will be close, because of client running context is finished. fid: %s", scId)
+					break stop
 				default:
 					if ctx.Err() != nil {
-						logk.Error(
-							"client will be close, because of client context error occurred",
-							zap.String("client", scId),
-							zap.Error(channel.Close()))
-						return
+						logk.Infof("client will be close, because of client context error occurred. fid: %s", scId)
+						break stop
 					}
 				}
 			}
+			logk.Infof("client closed: %v", channel.Close())
 		}()
 	}
 	//
