@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	"reflect"
 	"strconv"
 )
@@ -31,8 +30,14 @@ func RegisterModule(module Module) error {
 		mName := mv.Type().Method(mIndex).Name
 		mSignature := method.Type()
 		handlerMatched := handlerSignatureRegexp.FindStringSubmatch(mName)
+		mOutType := HandlerOutTypeNil
+		// skip Module interface Name
+		if mName == "Name" {
+			continue
+		}
+		//
 		if len(handlerMatched) < 2 { // method signature must contains route code
-			logk.Debug("not a request handler", zap.String("method", mName), zap.String("regexp", handlerRegexp))
+			logk.Debugf("not a request handler. method[%s] signature must be match regexp[%s]", mName, handlerSignatureRegexp.String())
 			continue
 		}
 		if mSignature.NumIn() != 3 {
@@ -49,10 +54,30 @@ func RegisterModule(module Module) error {
 			in2.Kind() != reflect.Ptr {
 			return createMethodSignatureError(mName)
 		}
-		// 1st out must be ptr if num out greater than 0
-		if mSignature.NumOut() > 0 {
-			if mSignature.Out(0).Kind() != reflect.Ptr {
-				return createMethodSignatureError(mName)
+		// outs
+		nOut := mSignature.NumOut()
+		if nOut > 0 {
+			// 1st out must be *message.ProtocolMessage or proto.Message if num out equals 0
+			ot := mSignature.Out(0)
+			//
+			if nOut == 1 {
+				if ot == TypeSmartMessage {
+					mOutType = HandlerOutTypeSmart
+				} else {
+					return createMethodSignatureError(mName)
+				}
+			} else {
+				ot1 := mSignature.Out(1)
+				//|| (!ot1.Implements(TypeProtoMessage) && ot1.Kind() != reflect.Slice)
+				if ot.Kind() != reflect.Int {
+					return createMethodSignatureError(mName)
+				} else if ot1.Implements(TypeProtoMessage) {
+					mOutType = HandlerOutTypeProtoMessage
+				} else if ot1.Kind() == reflect.Slice {
+					mOutType = HandlerOutTypeByteSlice
+				} else {
+					return createMethodSignatureError(mName)
+				}
 			}
 		}
 		s := handlerMatched[1]
@@ -64,6 +89,7 @@ func RegisterModule(module Module) error {
 				name:        mName,
 				inType:      in2,
 				method:      method,
+				outType:     mOutType,
 			})
 		}
 	}
@@ -71,5 +97,5 @@ func RegisterModule(module Module) error {
 }
 
 func createMethodSignatureError(mName string) error {
-	return fmt.Errorf("handler signature must be %s(context.Context, Channel, *Any) [*ResponseType]", mName)
+	return fmt.Errorf("handler signature must be %s(context.Context, Channel, *Any) [ (int, []byte) | proto.Message ]", mName)
 }

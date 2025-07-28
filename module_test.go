@@ -49,15 +49,9 @@ func (m *TestModule) UseItem1003(ctx context.Context, channel Channel, req *Req)
 	}
 }
 
-func (m *TestModule) StartFight1004(ctx context.Context, channel Channel, req *Req) *message.ProtocolMessage {
+func (m *TestModule) StartFight1004(ctx context.Context, channel Channel, req *Req) (int, []byte) {
 	logk.Info("StartFight1004 invoked", zap.Any("req", *req))
-	return &message.ProtocolMessage{
-		Seq:     2,
-		Route:   1005,
-		Header:  map[string]string{},
-		Codec:   message.Codec_JSON,
-		Payload: []byte(`{"pong":1005, "extra": "from server: 1004"}`),
-	}
+	return 1005, []byte(`{"pong":1005, "extra": "from server: 1004"}`)
 }
 
 func (m *TestModule) StartFightRes1005(ctx context.Context, channel Channel, req *Req) {

@@ -7,6 +7,7 @@ import (
 	"gitee.com/ywengineer/smart/codec"
 	"gitee.com/ywengineer/smart/message"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 	"reflect"
 	"sync"
 )
@@ -14,6 +15,15 @@ import (
 var hManager = &handlerManager{
 	_handlerMap: make(map[int32]*handlerDefinition, 1000),
 }
+
+type HandlerOutType int
+
+const (
+	HandlerOutTypeNil HandlerOutType = iota
+	HandlerOutTypeByteSlice
+	HandlerOutTypeProtoMessage
+	HandlerOutTypeSmart
+)
 
 // handler structure
 // code : handler for message code
@@ -25,14 +35,18 @@ type handlerDefinition struct {
 	method      reflect.Value
 	inType      reflect.Type // must be ptr
 	inPool      *sync.Pool
+	outType     HandlerOutType
 }
 
-func (hd *handlerDefinition) invoke(ctx context.Context, channel Channel, in interface{}) interface{} {
+func (hd *handlerDefinition) invoke(ctx context.Context, channel Channel, in interface{}) (interface{}, interface{}) {
 	out := hd.method.Call([]reflect.Value{reflect.ValueOf(ctx), reflect.ValueOf(channel), reflect.ValueOf(in)})
 	if len(out) == 0 {
-		return nil
+		return nil, nil
+	} else if len(out) == 1 {
+		return out[0].Interface(), nil
+	} else {
+		return out[0].Interface(), out[1].Interface()
 	}
-	return out[0].Interface()
 }
 
 func (hd *handlerDefinition) releaseIn(in interface{}) {
@@ -72,9 +86,26 @@ func (hm *handlerManager) invokeHandler(ctx context.Context, c Channel, req *mes
 		// decode failed. close channel
 		logk.Error("decode message error. suspicious channel, close it.", zap.Error(err))
 		_ = c.Close()
-	} else if response := hd.invoke(ctx, c, in); response != nil {
-		if err = c.Send(response); err != nil { // send response
-			logk.Error("send response error", zap.Error(err))
+	} else if out0, out1 := hd.invoke(ctx, c, in); out0 != nil || out1 != nil {
+		res := req
+		if hd.outType == HandlerOutTypeProtoMessage {
+			res.Route = int32(out0.(int))
+			res.Payload, err = proto.Marshal(out1.(proto.Message))
+			if err != nil {
+				logk.Errorf("encode handler response error. route = %d, err = %v", hd.messageCode, err)
+				return
+			}
+		} else if hd.outType == HandlerOutTypeByteSlice {
+			res.Route = int32(out0.(int))
+			res.Payload = out1.([]byte)
+		} else if hd.outType == HandlerOutTypeSmart {
+			res = out0.(*message.ProtocolMessage)
+		} else {
+			return
+		}
+		//
+		if err = c.Send(res); err != nil { // send response
+			logk.Errorf("send response error: %v", err)
 		}
 	} else { // oneway message
 		// ignore

@@ -2,7 +2,9 @@ package smart
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart/message"
 	"github.com/go-spring/spring-core/gs"
+	"google.golang.org/protobuf/proto"
 	"reflect"
 	"regexp"
 )
@@ -25,6 +27,8 @@ const (
 var TypeSocketChannel = reflect.TypeOf((*Channel)(nil)).Elem()
 var handlerSignatureRegexp = regexp.MustCompile(handlerRegexp)
 var TypeContext = reflect.TypeOf((*context.Context)(nil)).Elem()
+var TypeProtoMessage = reflect.TypeOf((*proto.Message)(nil)).Elem()
+var TypeSmartMessage = reflect.TypeOf((*message.ProtocolMessage)(nil))
 
 //var TypeSmartModule = reflect.TypeOf((*Module)(nil)).Elem()
 
