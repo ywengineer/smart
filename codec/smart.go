@@ -98,12 +98,12 @@ func (c *smartCodec) Decode(reader pkg.Reader, i interface{}) error {
 		return ErrPkgNotFull
 	} else {
 		_ = reader.Skip(message.ProtocolMetaBytes)
-		pkg, _ := reader.ReadBinary(pkgSize)
+		pkgBytes, _ := reader.ReadBinary(pkgSize)
 		if req, ok := i.(*message.ProtocolMessage); !ok {
 			return ErrParamMessage
 		} else {
 			_ = reader.Release()
-			if err := proto.Unmarshal(pkg, req); err != nil {
+			if err := proto.Unmarshal(pkgBytes, req); err != nil {
 				logk.Error("failed to decode bytes to ProtocolMessage.", zap.Error(err))
 				return err
 			}
