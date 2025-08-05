@@ -3,6 +3,7 @@ package smart
 import (
 	"fmt"
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
+	"github.com/gookit/event"
 	"github.com/pkg/errors"
 	"reflect"
 	"strconv"
@@ -12,7 +13,9 @@ import (
 // logic method signature MethodFormat[(MessageName:string)(MessageCode:int)](context.Context, Channel, *Any) [*ResponseType]
 // can get CtxKeySeq and CtxKeyHeader from logic method parameter context.Context
 type Module interface {
+	event.Listener
 	Name() string
+	Events() []string
 }
 
 func RegisterModule(module Module) error {
@@ -92,6 +95,10 @@ func RegisterModule(module Module) error {
 				outType:     mOutType,
 			})
 		}
+	}
+	//
+	for _, e := range module.Events() {
+		event.Listen(e, module)
 	}
 	return nil
 }

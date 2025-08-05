@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart/message"
+	"github.com/gookit/event"
+	"github.com/stretchr/testify/assert"
 	"regexp"
 	"testing"
 )
@@ -29,6 +31,15 @@ type Res struct {
 }
 
 type TestModule struct {
+}
+
+func (m *TestModule) Handle(e event.Event) error {
+	logk.Infof("TestModule.Handle: %s", e.Name())
+	return nil
+}
+
+func (m *TestModule) Events() []string {
+	return []string{"test"}
 }
 
 func (m *TestModule) Name() string {
@@ -64,11 +75,16 @@ func (m *TestModule) StartFightRes1005(ctx context.Context, channel Channel, req
 }
 
 func TestRegisterModule(t *testing.T) {
-	err := RegisterModule(&TestModule{})
+	tm := &TestModule{}
+	err := RegisterModule(tm)
 	if err != nil {
 		t.Errorf("%v", err)
 		t.FailNow()
 	}
+	err, _ = event.Fire("test11", event.M{"ss": "ss"})
+	assert.Nil(t, err)
+	err, _ = event.Fire("test", event.M{"ss": "ss"})
+	assert.Nil(t, err)
 }
 
 func TestRegex(t *testing.T) {
