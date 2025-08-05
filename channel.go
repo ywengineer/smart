@@ -18,6 +18,8 @@ type Channel interface {
 	Close() error
 	Send(msg interface{}) error
 	GetFd() int
+	SetAttachment(attachment interface{})
+	GetAttachment() interface{}
 }
 
 type defaultChannel struct {
@@ -30,6 +32,15 @@ type defaultChannel struct {
 	handlers     []ChannelHandler
 	interceptors []MessageInterceptor
 	msgHandlers  []MessageHandler
+	attachment   interface{}
+}
+
+func (h *defaultChannel) SetAttachment(attachment interface{}) {
+	h.attachment = attachment
+}
+
+func (h *defaultChannel) GetAttachment() interface{} {
+	return h.attachment
 }
 
 func (h *defaultChannel) Context() context.Context {
