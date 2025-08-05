@@ -5,6 +5,7 @@ import (
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/gookit/event"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"reflect"
 	"strconv"
 )
@@ -16,6 +17,12 @@ type Module interface {
 	event.Listener
 	Name() string
 	Events() []string
+}
+
+var exclusiveMethod = []string{"Name", "Events", "Handle"}
+
+func isExclusiveMethod(method string) bool {
+	return lo.Contains(exclusiveMethod, method)
 }
 
 func RegisterModule(module Module) error {
@@ -35,7 +42,7 @@ func RegisterModule(module Module) error {
 		handlerMatched := handlerSignatureRegexp.FindStringSubmatch(mName)
 		mOutType := HandlerOutTypeNil
 		// skip Module interface Name
-		if mName == "Name" {
+		if isExclusiveMethod(mName) {
 			continue
 		}
 		//
