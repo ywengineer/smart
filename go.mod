@@ -16,6 +16,7 @@ require (
 	github.com/gookit/event v1.1.2
 	github.com/panjf2000/gnet/v2 v2.9.2
 	github.com/pkg/errors v0.9.1
+	github.com/samber/lo v1.51.0
 	github.com/stretchr/testify v1.10.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/xuri/excelize/v2 v2.9.1
