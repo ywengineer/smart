@@ -47,7 +47,7 @@ func RegisterModule(module Module) error {
 		}
 		//
 		if len(handlerMatched) < 2 { // method signature must contains route code
-			logk.Debugf("not a request handler. method[%s] signature must be match regexp[%s]", mName, handlerSignatureRegexp.String())
+			logk.Tracef("not a request handler. method[%s] signature must be match regexp[%s]", mName, handlerSignatureRegexp.String())
 			continue
 		}
 		if mSignature.NumIn() != 3 {
