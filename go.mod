@@ -1,6 +1,6 @@
 module gitee.com/ywengineer/smart
 
-go 1.24
+go 1.24.3
 
 toolchain go1.24.3
 
